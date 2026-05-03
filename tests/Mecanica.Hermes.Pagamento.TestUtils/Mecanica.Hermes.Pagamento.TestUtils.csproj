@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <IsPackable>false</IsPackable>
+        <IsTestProject>false</IsTestProject>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Bogus"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\Mecanica.Hermes.Pagamento.Domain\Mecanica.Hermes.Pagamento.Domain.csproj"/>
+        <ProjectReference Include="..\..\src\Mecanica.Hermes.Pagamento.Application\Mecanica.Hermes.Pagamento.Application.csproj"/>
+    </ItemGroup>
+
+</Project>
