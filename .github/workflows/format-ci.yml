@@ -1,0 +1,81 @@
+name: Format CI
+
+on:
+  pull_request:
+    branches:
+      - "main"
+  push:
+    branches:
+      - "main"
+
+jobs:
+  format:
+    name: Verificar formatação (.editorconfig)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup .NET 10.0
+        uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Cache NuGet packages
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('Directory.Packages.props') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - name: Restaurar pacotes
+        run: dotnet restore Mecanica.Hermes.Pagamento.sln
+
+      - name: Verificar whitespace
+        run: |
+          dotnet format whitespace Mecanica.Hermes.Pagamento.sln \
+            --verify-no-changes \
+            --no-restore \
+            --verbosity diagnostic
+
+      - name: Verificar style
+        run: |
+          dotnet format style Mecanica.Hermes.Pagamento.sln \
+            --verify-no-changes \
+            --no-restore \
+            --verbosity diagnostic
+
+      - name: Verificar analyzers
+        run: |
+          dotnet format analyzers Mecanica.Hermes.Pagamento.sln \
+            --verify-no-changes \
+            --no-restore \
+            --verbosity diagnostic
+
+      - name: Verificar comprimento máximo de linha (max_line_length=120)
+        shell: bash
+        run: |
+          MAX=120
+          violations=$(find src tests -name "*.cs" \
+            -not -path "*/bin/*" \
+            -not -path "*/obj/*" \
+            -not -path "*/Migrations/*" \
+            -print0 \
+            | xargs -0 awk -v max=$MAX '{ if (length($0) > max) printf "%s:%d: %d cols\n", FILENAME, FNR, length($0) }')
+          if [ -n "$violations" ]; then
+            echo "$violations"
+            count=$(echo "$violations" | wc -l)
+            echo "::error::${count} linha(s) excedem ${MAX} colunas (max_line_length do .editorconfig)."
+            exit 1
+          fi
+          echo "OK: nenhuma linha excede ${MAX} colunas."
+
+      - name: Dica de correção
+        if: failure()
+        run: |
+          echo "::error::Formatação fora do padrão definido em .editorconfig."
+          echo "Para corrigir localmente, execute:"
+          echo "  dotnet format Mecanica.Hermes.Pagamento.sln"
+          echo "Em seguida, faça commit das alterações e atualize o PR."
