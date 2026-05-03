@@ -1,0 +1,96 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A0F1A0E0-1234-4E2F-AD95-C03A7A82F0A1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{B0F1A0E0-1234-4E2F-AD95-C03A7A82F0B1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mecanica.Hermes.Pagamento.Domain", "src\Mecanica.Hermes.Pagamento.Domain\Mecanica.Hermes.Pagamento.Domain.csproj", "{11111111-1111-4111-8111-111111111111}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mecanica.Hermes.Pagamento.Application", "src\Mecanica.Hermes.Pagamento.Application\Mecanica.Hermes.Pagamento.Application.csproj", "{22222222-2222-4222-8222-222222222222}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mecanica.Hermes.Pagamento.Infrastructure", "src\Mecanica.Hermes.Pagamento.Infrastructure\Mecanica.Hermes.Pagamento.Infrastructure.csproj", "{33333333-3333-4333-8333-333333333333}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mecanica.Hermes.Pagamento.Api", "src\Mecanica.Hermes.Pagamento.Api\Mecanica.Hermes.Pagamento.Api.csproj", "{44444444-4444-4444-8444-444444444444}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mecanica.Hermes.Pagamento.Domain.Tests", "tests\Mecanica.Hermes.Pagamento.Domain.Tests\Mecanica.Hermes.Pagamento.Domain.Tests.csproj", "{55555555-5555-4555-8555-555555555555}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mecanica.Hermes.Pagamento.Application.Tests", "tests\Mecanica.Hermes.Pagamento.Application.Tests\Mecanica.Hermes.Pagamento.Application.Tests.csproj", "{66666666-6666-4666-8666-666666666666}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mecanica.Hermes.Pagamento.Infrastructure.Tests", "tests\Mecanica.Hermes.Pagamento.Infrastructure.Tests\Mecanica.Hermes.Pagamento.Infrastructure.Tests.csproj", "{77777777-7777-4777-8777-777777777777}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mecanica.Hermes.Pagamento.Api.Tests", "tests\Mecanica.Hermes.Pagamento.Api.Tests\Mecanica.Hermes.Pagamento.Api.Tests.csproj", "{88888888-8888-4888-8888-888888888888}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mecanica.Hermes.Pagamento.IntegrationTests", "tests\Mecanica.Hermes.Pagamento.IntegrationTests\Mecanica.Hermes.Pagamento.IntegrationTests.csproj", "{99999999-9999-4999-8999-999999999999}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mecanica.Hermes.Pagamento.ArchitectureTests", "tests\Mecanica.Hermes.Pagamento.ArchitectureTests\Mecanica.Hermes.Pagamento.ArchitectureTests.csproj", "{AAAAAAAA-AAAA-4AAA-8AAA-AAAAAAAAAAAA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mecanica.Hermes.Pagamento.TestUtils", "tests\Mecanica.Hermes.Pagamento.TestUtils\Mecanica.Hermes.Pagamento.TestUtils.csproj", "{BBBBBBBB-BBBB-4BBB-8BBB-BBBBBBBBBBBB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{11111111-1111-4111-8111-111111111111}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{11111111-1111-4111-8111-111111111111}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{11111111-1111-4111-8111-111111111111}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{11111111-1111-4111-8111-111111111111}.Release|Any CPU.Build.0 = Release|Any CPU
+		{22222222-2222-4222-8222-222222222222}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{22222222-2222-4222-8222-222222222222}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{22222222-2222-4222-8222-222222222222}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{22222222-2222-4222-8222-222222222222}.Release|Any CPU.Build.0 = Release|Any CPU
+		{33333333-3333-4333-8333-333333333333}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{33333333-3333-4333-8333-333333333333}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{33333333-3333-4333-8333-333333333333}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{33333333-3333-4333-8333-333333333333}.Release|Any CPU.Build.0 = Release|Any CPU
+		{44444444-4444-4444-8444-444444444444}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{44444444-4444-4444-8444-444444444444}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{44444444-4444-4444-8444-444444444444}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{44444444-4444-4444-8444-444444444444}.Release|Any CPU.Build.0 = Release|Any CPU
+		{55555555-5555-4555-8555-555555555555}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{55555555-5555-4555-8555-555555555555}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{55555555-5555-4555-8555-555555555555}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{55555555-5555-4555-8555-555555555555}.Release|Any CPU.Build.0 = Release|Any CPU
+		{66666666-6666-4666-8666-666666666666}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{66666666-6666-4666-8666-666666666666}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{66666666-6666-4666-8666-666666666666}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{66666666-6666-4666-8666-666666666666}.Release|Any CPU.Build.0 = Release|Any CPU
+		{77777777-7777-4777-8777-777777777777}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{77777777-7777-4777-8777-777777777777}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{77777777-7777-4777-8777-777777777777}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{77777777-7777-4777-8777-777777777777}.Release|Any CPU.Build.0 = Release|Any CPU
+		{88888888-8888-4888-8888-888888888888}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{88888888-8888-4888-8888-888888888888}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{88888888-8888-4888-8888-888888888888}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{88888888-8888-4888-8888-888888888888}.Release|Any CPU.Build.0 = Release|Any CPU
+		{99999999-9999-4999-8999-999999999999}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{99999999-9999-4999-8999-999999999999}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{99999999-9999-4999-8999-999999999999}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{99999999-9999-4999-8999-999999999999}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AAAAAAAA-AAAA-4AAA-8AAA-AAAAAAAAAAAA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AAAAAAAA-AAAA-4AAA-8AAA-AAAAAAAAAAAA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AAAAAAAA-AAAA-4AAA-8AAA-AAAAAAAAAAAA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AAAAAAAA-AAAA-4AAA-8AAA-AAAAAAAAAAAA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BBBBBBBB-BBBB-4BBB-8BBB-BBBBBBBBBBBB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BBBBBBBB-BBBB-4BBB-8BBB-BBBBBBBBBBBB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BBBBBBBB-BBBB-4BBB-8BBB-BBBBBBBBBBBB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BBBBBBBB-BBBB-4BBB-8BBB-BBBBBBBBBBBB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{11111111-1111-4111-8111-111111111111} = {A0F1A0E0-1234-4E2F-AD95-C03A7A82F0A1}
+		{22222222-2222-4222-8222-222222222222} = {A0F1A0E0-1234-4E2F-AD95-C03A7A82F0A1}
+		{33333333-3333-4333-8333-333333333333} = {A0F1A0E0-1234-4E2F-AD95-C03A7A82F0A1}
+		{44444444-4444-4444-8444-444444444444} = {A0F1A0E0-1234-4E2F-AD95-C03A7A82F0A1}
+		{55555555-5555-4555-8555-555555555555} = {B0F1A0E0-1234-4E2F-AD95-C03A7A82F0B1}
+		{66666666-6666-4666-8666-666666666666} = {B0F1A0E0-1234-4E2F-AD95-C03A7A82F0B1}
+		{77777777-7777-4777-8777-777777777777} = {B0F1A0E0-1234-4E2F-AD95-C03A7A82F0B1}
+		{88888888-8888-4888-8888-888888888888} = {B0F1A0E0-1234-4E2F-AD95-C03A7A82F0B1}
+		{99999999-9999-4999-8999-999999999999} = {B0F1A0E0-1234-4E2F-AD95-C03A7A82F0B1}
+		{AAAAAAAA-AAAA-4AAA-8AAA-AAAAAAAAAAAA} = {B0F1A0E0-1234-4E2F-AD95-C03A7A82F0B1}
+		{BBBBBBBB-BBBB-4BBB-8BBB-BBBBBBBBBBBB} = {B0F1A0E0-1234-4E2F-AD95-C03A7A82F0B1}
+	EndGlobalSection
+EndGlobal
