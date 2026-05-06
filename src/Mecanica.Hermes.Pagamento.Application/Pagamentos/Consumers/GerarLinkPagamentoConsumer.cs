@@ -99,15 +99,7 @@ public sealed class GerarLinkPagamentoConsumer(
         await repository.AddAsync(pagamento);
         await unitOfWork.CommitAsync(context.CancellationToken);
 
-        await context.Publish(new EnviarEmailPagamentoCommand(
-            pagamento.Id,
-            pagamento.OrdemDeServicoId,
-            pagamento.EmailCliente.Valor,
-            pagamento.NomeCliente,
-            pagamento.LinkPagamento!.Url,
-            pagamento.Valor.Valor,
-            pagamento.Valor.Moeda,
-            pagamento.Vencimento));
+        await context.Publish(new LinkPagamentoGeradoEvent(pagamento.Id));
 
         // Agenda o primeiro polling para reconciliar caso o webhook não chegue.
         // O scheduler usa o DelayedMessageScheduler do RabbitMQ.

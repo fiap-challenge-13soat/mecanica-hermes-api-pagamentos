@@ -50,12 +50,11 @@ public sealed class ExpirarPagamentoConsumer(
             return;
         }
 
-        await context.Publish(new PagamentoRecusadoIntegrationEvent(
-            pagamento.Id,
+        await context.Publish(new PagamentoRecusadoEvent(
             pagamento.OrdemDeServicoId,
-            pagamento.ClienteId,
+            pagamento.Id,
             "Pagamento expirado: limite de verificações atingido sem confirmação.",
-            pagamento.TentativasVerificacao));
+            DateTime.UtcNow));
 
         metrics.PagamentoExpirado();
 

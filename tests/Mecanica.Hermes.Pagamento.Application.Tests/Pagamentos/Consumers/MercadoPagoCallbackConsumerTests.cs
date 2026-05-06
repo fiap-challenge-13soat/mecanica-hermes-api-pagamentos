@@ -1,7 +1,6 @@
 using FluentAssertions;
 using MassTransit;
 using MassTransit.Testing;
-using Mecanica.Hermes.Application.OrdensDeServico.Messages.Requests;
 using Mecanica.Hermes.Pagamento.Application.Common.Persistence;
 using Mecanica.Hermes.Pagamento.Application.Pagamentos.Consumers;
 using Mecanica.Hermes.Pagamento.Application.Pagamentos.Messages.Commands;
@@ -42,7 +41,7 @@ public class MercadoPagoCallbackConsumerTests
     }
 
     [Fact]
-    public async Task Consume_StatusApproved_PublicaPagamentoAprovado()
+    public async Task Consume_StatusApproved_PublicaPagamentoConfirmado()
     {
         var (repo, uow, metrics) = NewMocks();
         var pagamento = new PagamentoBuilder().BuildAguardandoConfirmacao();
@@ -56,7 +55,7 @@ public class MercadoPagoCallbackConsumerTests
             await harness.Bus.Publish(new ExecuteMercadoPagoCallback(pagamento.Id, "approved"));
 
             (await harness.Consumed.Any<ExecuteMercadoPagoCallback>()).Should().BeTrue();
-            (await harness.Published.Any<PagamentoAprovadoRequest>(
+            (await harness.Published.Any<PagamentoConfirmadoEvent>(
                 ctx => ctx.Context.Message.OrdemDeServicoId == pagamento.OrdemDeServicoId))
                 .Should().BeTrue();
             (await harness.Published.Any<PagamentoOperationCompleted>()).Should().BeTrue();
@@ -73,7 +72,6 @@ public class MercadoPagoCallbackConsumerTests
     [Fact]
     public async Task Consume_StatusApprovedJaPago_PublicaApenasCallback()
     {
-        // Pagamento já está em estado Pago (idempotência).
         var (repo, uow, metrics) = NewMocks();
         var pagamento = new PagamentoBuilder().BuildAguardandoConfirmacao();
         pagamento.Confirmar(PagamentoConfirmadoVia.Polling);
@@ -89,10 +87,9 @@ public class MercadoPagoCallbackConsumerTests
             await harness.Bus.Publish(new ExecuteMercadoPagoCallback(pagamento.Id, "approved"));
 
             (await harness.Consumed.Any<ExecuteMercadoPagoCallback>()).Should().BeTrue();
-            (await harness.Published.Any<PagamentoAprovadoRequest>()).Should().BeTrue();
+            (await harness.Published.Any<PagamentoConfirmadoEvent>()).Should().BeTrue();
             (await harness.Published.Any<PagamentoOperationCompleted>()).Should().BeTrue();
 
-            // Não chama Update (sem mutação) nem Commit.
             repo.Verify(r => r.UpdateAsync(It.IsAny<PagamentoAggregate>()), Times.Never);
             uow.Verify(u => u.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
         }
@@ -103,7 +100,7 @@ public class MercadoPagoCallbackConsumerTests
     }
 
     [Fact]
-    public async Task Consume_StatusRejected_PublicaRecusadoIntegrationEvent()
+    public async Task Consume_StatusRejected_PublicaRecusadoEvent()
     {
         var (repo, uow, metrics) = NewMocks();
         var pagamento = new PagamentoBuilder().BuildAguardandoConfirmacao();
@@ -117,7 +114,7 @@ public class MercadoPagoCallbackConsumerTests
             await harness.Bus.Publish(new ExecuteMercadoPagoCallback(pagamento.Id, "rejected"));
 
             (await harness.Consumed.Any<ExecuteMercadoPagoCallback>()).Should().BeTrue();
-            (await harness.Published.Any<PagamentoRecusadoIntegrationEvent>(
+            (await harness.Published.Any<PagamentoRecusadoEvent>(
                 ctx => ctx.Context.Message.PagamentoId == pagamento.Id))
                 .Should().BeTrue();
             (await harness.Published.Any<PagamentoOperationCompleted>()).Should().BeTrue();
@@ -131,7 +128,7 @@ public class MercadoPagoCallbackConsumerTests
     }
 
     [Fact]
-    public async Task Consume_StatusCancelled_PublicaRecusadoIntegrationEvent()
+    public async Task Consume_StatusCancelled_PublicaRecusadoEvent()
     {
         var (repo, uow, metrics) = NewMocks();
         var pagamento = new PagamentoBuilder().BuildAguardandoConfirmacao();
@@ -145,7 +142,7 @@ public class MercadoPagoCallbackConsumerTests
             await harness.Bus.Publish(new ExecuteMercadoPagoCallback(pagamento.Id, "cancelled"));
 
             (await harness.Consumed.Any<ExecuteMercadoPagoCallback>()).Should().BeTrue();
-            (await harness.Published.Any<PagamentoRecusadoIntegrationEvent>()).Should().BeTrue();
+            (await harness.Published.Any<PagamentoRecusadoEvent>()).Should().BeTrue();
         }
         finally
         {
@@ -170,8 +167,8 @@ public class MercadoPagoCallbackConsumerTests
 
             (await harness.Consumed.Any<ExecuteMercadoPagoCallback>()).Should().BeTrue();
             (await harness.Published.Any<PagamentoOperationCompleted>()).Should().BeTrue();
-            (await harness.Published.Any<PagamentoAprovadoRequest>()).Should().BeFalse();
-            (await harness.Published.Any<PagamentoRecusadoIntegrationEvent>()).Should().BeFalse();
+            (await harness.Published.Any<PagamentoConfirmadoEvent>()).Should().BeFalse();
+            (await harness.Published.Any<PagamentoRecusadoEvent>()).Should().BeFalse();
 
             pagamento.StatusAtual.StatusAtual.Should().Be(statusAntes);
             repo.Verify(r => r.UpdateAsync(It.IsAny<PagamentoAggregate>()), Times.Never);

@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using MassTransit;
-using Mecanica.Hermes.Application.OrdensDeServico.Messages.Requests;
 using Mecanica.Hermes.Pagamento.Application.Common.Exceptions;
 using Mecanica.Hermes.Pagamento.Application.Common.Messaging;
 using Mecanica.Hermes.Pagamento.Application.Common.Persistence;
@@ -157,27 +156,25 @@ public sealed class VerificarStatusPagamentoConsumer(
         // Publicações cross-service derivadas da transição já aplicada.
         if (pagamento.StatusAtual.StatusAtual == PagamentoStatus.Pago)
         {
-            await context.Publish(new PagamentoAprovadoRequest(pagamento.OrdemDeServicoId));
+            await context.Publish(new PagamentoConfirmadoEvent(pagamento.OrdemDeServicoId, pagamento.Id, DateTime.UtcNow));
             metrics.PagamentoConfirmado((confirmadoVia ?? PagamentoConfirmadoVia.Polling).ToString());
         }
         else if (pagamento.StatusAtual.StatusAtual == PagamentoStatus.Recusado)
         {
-            await context.Publish(new PagamentoRecusadoIntegrationEvent(
-                pagamento.Id,
+            await context.Publish(new PagamentoRecusadoEvent(
                 pagamento.OrdemDeServicoId,
-                pagamento.ClienteId,
+                pagamento.Id,
                 pagamento.UltimoMotivoFalha ?? "Pagamento recusado pelo Mercado Pago.",
-                pagamento.TentativasVerificacao));
+                DateTime.UtcNow));
             metrics.PagamentoRecusado();
         }
         else if (pagamento.StatusAtual.StatusAtual == PagamentoStatus.Expirado)
         {
-            await context.Publish(new PagamentoRecusadoIntegrationEvent(
-                pagamento.Id,
+            await context.Publish(new PagamentoRecusadoEvent(
                 pagamento.OrdemDeServicoId,
-                pagamento.ClienteId,
+                pagamento.Id,
                 "Pagamento expirado.",
-                pagamento.TentativasVerificacao));
+                DateTime.UtcNow));
             metrics.PagamentoExpirado();
         }
 

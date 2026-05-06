@@ -22,6 +22,15 @@ internal sealed class PagamentoRepository(MongoDbContext db, IUnitOfWork uow) : 
         return doc?.ToDomain();
     }
 
+    public async Task<Domain.Pagamentos.Pagamento?> GetByOrdemDeServicoIdAsync(Guid ordemDeServicoId)
+    {
+        var doc = await db.Pagamentos
+            .Find(d => d.OrdemDeServicoId == ordemDeServicoId)
+            .FirstOrDefaultAsync();
+
+        return doc?.ToDomain();
+    }
+
     public async Task<PagedResult<Domain.Pagamentos.Pagamento>> ListByStatusAsync(
         PagamentoStatus status,
         PaginationParams paginationParams)

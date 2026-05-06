@@ -50,12 +50,11 @@ public sealed class RecusarPagamentoConsumer(
             return;
         }
 
-        await context.Publish(new PagamentoRecusadoIntegrationEvent(
-            pagamento.Id,
+        await context.Publish(new PagamentoRecusadoEvent(
             pagamento.OrdemDeServicoId,
-            pagamento.ClienteId,
+            pagamento.Id,
             msg.Motivo,
-            pagamento.TentativasVerificacao));
+            DateTime.UtcNow));
 
         metrics.PagamentoRecusado();
 

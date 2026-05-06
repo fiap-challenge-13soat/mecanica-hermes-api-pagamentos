@@ -1,10 +1,10 @@
 using MassTransit;
-using Mecanica.Hermes.Application.OrdensDeServico.Messages.Requests;
 using Mecanica.Hermes.Pagamento.Application.Common.Exceptions;
 using Mecanica.Hermes.Pagamento.Application.Common.Messaging;
 using Mecanica.Hermes.Pagamento.Application.Common.Persistence;
 using Mecanica.Hermes.Pagamento.Application.Pagamentos.Constants;
 using Mecanica.Hermes.Pagamento.Application.Pagamentos.Messages.Commands;
+using Mecanica.Hermes.Pagamento.Application.Pagamentos.Messages.Integration;
 using Mecanica.Hermes.Pagamento.Application.Pagamentos.Ports;
 using Mecanica.Hermes.Pagamento.Domain.Pagamentos.Enums;
 
@@ -38,7 +38,7 @@ public sealed class ConfirmarPagamentoConsumer(
         // Idempotência: se já está pago, apenas reemite o callback à OS (defensivo) e completa.
         if (pagamento.StatusAtual.StatusAtual == PagamentoStatus.Pago)
         {
-            await context.Publish(new PagamentoAprovadoRequest(pagamento.OrdemDeServicoId));
+            await context.Publish(new PagamentoConfirmadoEvent(pagamento.OrdemDeServicoId, pagamento.Id, DateTime.UtcNow));
             await PublishCompleted(context);
             return;
         }
@@ -64,7 +64,7 @@ public sealed class ConfirmarPagamentoConsumer(
             return;
         }
 
-        await context.Publish(new PagamentoAprovadoRequest(pagamento.OrdemDeServicoId));
+        await context.Publish(new PagamentoConfirmadoEvent(pagamento.OrdemDeServicoId, pagamento.Id, DateTime.UtcNow));
 
         metrics.PagamentoConfirmado(msg.Via.ToString());
 

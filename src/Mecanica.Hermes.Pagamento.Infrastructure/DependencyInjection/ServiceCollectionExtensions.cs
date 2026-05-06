@@ -5,6 +5,7 @@ using Mecanica.Hermes.Pagamento.Application.Common.Behaviors;
 using Mecanica.Hermes.Pagamento.Application.Common.Messaging;
 using Mecanica.Hermes.Pagamento.Application.Pagamentos.Ports;
 using Mecanica.Hermes.Pagamento.Domain;
+using Mecanica.Hermes.Pagamento.Infrastructure.HttpClients;
 using Mecanica.Hermes.Pagamento.Infrastructure.MassTransit.Adapters;
 using Mecanica.Hermes.Pagamento.Infrastructure.MassTransit.Configurations;
 using Mecanica.Hermes.Pagamento.Infrastructure.MercadoPago;
@@ -57,6 +58,20 @@ public static class ServiceCollectionExtensions
                 options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(60);
                 options.Retry.MaxRetryAttempts = 3;
                 options.CircuitBreaker.MinimumThroughput = 10;
+            });
+
+        var cadastrosBaseUrl = Environment.GetEnvironmentVariable(VariableNames.CadastrosApiBaseUrl)
+                               ?? "http://localhost:5000/";
+        services.AddHttpClient<IClienteApiClient, ClienteApiClient>(client =>
+            {
+                client.BaseAddress = new Uri(cadastrosBaseUrl.TrimEnd('/') + "/");
+            })
+            .AddStandardResilienceHandler(options =>
+            {
+                options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(10);
+                options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(30);
+                options.Retry.MaxRetryAttempts = 2;
+                options.CircuitBreaker.MinimumThroughput = 5;
             });
 
         services.AddMediatR(cfg =>

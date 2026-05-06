@@ -1,5 +1,4 @@
 using MassTransit;
-using Mecanica.Hermes.Application.OrdensDeServico.Messages.Requests;
 using Mecanica.Hermes.Pagamento.Application.Common.Exceptions;
 using Mecanica.Hermes.Pagamento.Application.Common.Messaging;
 using Mecanica.Hermes.Pagamento.Application.Common.Persistence;
@@ -46,7 +45,7 @@ public sealed class MercadoPagoCallbackConsumer(
                 if (pagamento.StatusAtual.StatusAtual == PagamentoStatus.Pago)
                 {
                     // Idempotência: webhook duplicado ou polling chegou primeiro.
-                    await context.Publish(new PagamentoAprovadoRequest(pagamento.OrdemDeServicoId));
+                    await context.Publish(new PagamentoConfirmadoEvent(pagamento.OrdemDeServicoId, pagamento.Id, DateTime.UtcNow));
                     await PublishCompleted(context);
                     return;
                 }
@@ -61,7 +60,7 @@ public sealed class MercadoPagoCallbackConsumer(
 
                 if (!await CommitOrFail(context, pagamento)) return;
 
-                await context.Publish(new PagamentoAprovadoRequest(pagamento.OrdemDeServicoId));
+                await context.Publish(new PagamentoConfirmadoEvent(pagamento.OrdemDeServicoId, pagamento.Id, DateTime.UtcNow));
                 metrics.PagamentoConfirmado(PagamentoConfirmadoVia.Webhook.ToString());
                 break;
 
@@ -79,12 +78,11 @@ public sealed class MercadoPagoCallbackConsumer(
 
                 if (!await CommitOrFail(context, pagamento)) return;
 
-                await context.Publish(new PagamentoRecusadoIntegrationEvent(
-                    pagamento.Id,
+                await context.Publish(new PagamentoRecusadoEvent(
                     pagamento.OrdemDeServicoId,
-                    pagamento.ClienteId,
+                    pagamento.Id,
                     pagamento.UltimoMotivoFalha ?? "Pagamento recusado pelo Mercado Pago.",
-                    pagamento.TentativasVerificacao));
+                    DateTime.UtcNow));
                 metrics.PagamentoRecusado();
                 break;
 

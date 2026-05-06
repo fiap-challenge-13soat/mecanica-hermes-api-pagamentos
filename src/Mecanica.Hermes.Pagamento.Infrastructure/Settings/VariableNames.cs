@@ -46,6 +46,9 @@ internal static class VariableNames
     public const string PagamentoOperationTimeout = "PAGAMENTO__OPERATION_TIMEOUT";
     public const string PagamentoLinkValidade = "PAGAMENTO__LINK_VALIDADE";
 
+    // Cadastros API (M2M)
+    public const string CadastrosApiBaseUrl = "CADASTROS_API__BASE_URL";
+
     // Outbox
     public const string OutboxPollInterval = "OUTBOX__POLL_INTERVAL";
     public const string OutboxBatchSize = "OUTBOX__BATCH_SIZE";

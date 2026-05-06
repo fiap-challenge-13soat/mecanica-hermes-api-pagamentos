@@ -89,7 +89,7 @@ public class GerarLinkPagamentoConsumerTests
             await harness.Bus.Publish(cmd);
 
             (await harness.Consumed.Any<ExecuteGerarLinkPagamento>()).Should().BeTrue();
-            (await harness.Published.Any<EnviarEmailPagamentoCommand>(
+            (await harness.Published.Any<LinkPagamentoGeradoEvent>(
                 ctx => ctx.Context.Message.PagamentoId == cmd.PagamentoId))
                 .Should().BeTrue();
             (await harness.Published.Any<PagamentoOperationCompleted>()).Should().BeTrue();
@@ -122,7 +122,7 @@ public class GerarLinkPagamentoConsumerTests
 
             (await harness.Consumed.Any<ExecuteGerarLinkPagamento>()).Should().BeTrue();
             (await harness.Published.Any<PagamentoOperationCompleted>()).Should().BeTrue();
-            (await harness.Published.Any<EnviarEmailPagamentoCommand>()).Should().BeFalse();
+            (await harness.Published.Any<LinkPagamentoGeradoEvent>()).Should().BeFalse();
 
             repo.Verify(r => r.AddAsync(It.IsAny<PagamentoAggregate>()), Times.Never);
             mp.Verify(m => m.CreatePreferenceAsync(
@@ -159,7 +159,7 @@ public class GerarLinkPagamentoConsumerTests
             (await harness.Consumed.Any<ExecuteGerarLinkPagamento>()).Should().BeTrue();
             (await harness.Published.Any<PagamentoOperationFailed>()).Should().BeTrue();
             (await harness.Published.Any<PagamentoOperationCompleted>()).Should().BeFalse();
-            (await harness.Published.Any<EnviarEmailPagamentoCommand>()).Should().BeFalse();
+            (await harness.Published.Any<LinkPagamentoGeradoEvent>()).Should().BeFalse();
 
             metrics.Verify(m => m.ErroRegistrado(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
             repo.Verify(r => r.AddAsync(It.IsAny<PagamentoAggregate>()), Times.Never);

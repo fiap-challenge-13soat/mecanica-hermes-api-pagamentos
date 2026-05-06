@@ -10,6 +10,7 @@ namespace Mecanica.Hermes.Pagamento.Application.Pagamentos.Ports;
 public interface IPagamentoReader
 {
     Task<Domain.Pagamentos.Pagamento?> GetByIdAsync(Guid id);
+    Task<Domain.Pagamentos.Pagamento?> GetByOrdemDeServicoIdAsync(Guid ordemDeServicoId);
     Task<PagedResult<Domain.Pagamentos.Pagamento>> ListByStatusAsync(
         PagamentoStatus status,
         PaginationParams paginationParams);

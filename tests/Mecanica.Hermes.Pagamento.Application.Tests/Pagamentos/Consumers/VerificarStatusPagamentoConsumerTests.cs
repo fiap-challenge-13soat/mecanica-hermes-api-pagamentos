@@ -1,7 +1,6 @@
 using FluentAssertions;
 using MassTransit;
 using MassTransit.Testing;
-using Mecanica.Hermes.Application.OrdensDeServico.Messages.Requests;
 using Mecanica.Hermes.Pagamento.Application.Common.Persistence;
 using Mecanica.Hermes.Pagamento.Application.Pagamentos.Consumers;
 using Mecanica.Hermes.Pagamento.Application.Pagamentos.Messages.Commands;
@@ -61,7 +60,7 @@ public class VerificarStatusPagamentoConsumerTests
     }
 
     [Fact]
-    public async Task Consume_StatusApproved_ConfirmaEPublicaPagamentoAprovado()
+    public async Task Consume_StatusApproved_ConfirmaEPublicaPagamentoConfirmado()
     {
         var (repo, uow, mp, metrics, scheduler) = NewMocks();
         var pagamento = new PagamentoBuilder().BuildAguardandoConfirmacao();
@@ -77,7 +76,7 @@ public class VerificarStatusPagamentoConsumerTests
             await harness.Bus.Publish(new ExecuteVerificarStatusPagamento(pagamento.Id));
 
             (await harness.Consumed.Any<ExecuteVerificarStatusPagamento>()).Should().BeTrue();
-            (await harness.Published.Any<PagamentoAprovadoRequest>(
+            (await harness.Published.Any<PagamentoConfirmadoEvent>(
                 ctx => ctx.Context.Message.OrdemDeServicoId == pagamento.OrdemDeServicoId))
                 .Should().BeTrue();
             (await harness.Published.Any<PagamentoOperationCompleted>()).Should().BeTrue();
@@ -92,7 +91,7 @@ public class VerificarStatusPagamentoConsumerTests
     }
 
     [Fact]
-    public async Task Consume_StatusRejected_RecusaEPublicaIntegrationEvent()
+    public async Task Consume_StatusRejected_RecusaEPublicaRecusadoEvent()
     {
         var (repo, uow, mp, metrics, scheduler) = NewMocks();
         var pagamento = new PagamentoBuilder().BuildAguardandoConfirmacao();
@@ -108,9 +107,9 @@ public class VerificarStatusPagamentoConsumerTests
             await harness.Bus.Publish(new ExecuteVerificarStatusPagamento(pagamento.Id));
 
             (await harness.Consumed.Any<ExecuteVerificarStatusPagamento>()).Should().BeTrue();
-            (await harness.Published.Any<PagamentoRecusadoIntegrationEvent>()).Should().BeTrue();
+            (await harness.Published.Any<PagamentoRecusadoEvent>()).Should().BeTrue();
             (await harness.Published.Any<PagamentoOperationCompleted>()).Should().BeTrue();
-            (await harness.Published.Any<PagamentoAprovadoRequest>()).Should().BeFalse();
+            (await harness.Published.Any<PagamentoConfirmadoEvent>()).Should().BeFalse();
 
             metrics.Verify(m => m.PagamentoRecusado(), Times.Once);
         }
@@ -124,7 +123,6 @@ public class VerificarStatusPagamentoConsumerTests
     public async Task Consume_StatusPendingComTentativasRestantes_Reagenda()
     {
         var (repo, uow, mp, metrics, scheduler) = NewMocks();
-        // Limite alto, tentativas zero → ainda pode reverificar.
         var pagamento = new PagamentoBuilder().WithLimiteVerificacoes(15).BuildAguardandoConfirmacao();
         repo.Setup(r => r.GetByIdAsync(pagamento.Id)).ReturnsAsync(pagamento);
         mp.Setup(m => m.GetPaymentStatusAsync(pagamento.Id, It.IsAny<CancellationToken>()))
@@ -139,10 +137,9 @@ public class VerificarStatusPagamentoConsumerTests
 
             (await harness.Consumed.Any<ExecuteVerificarStatusPagamento>()).Should().BeTrue();
             (await harness.Published.Any<PagamentoOperationCompleted>()).Should().BeTrue();
-            (await harness.Published.Any<PagamentoAprovadoRequest>()).Should().BeFalse();
-            (await harness.Published.Any<PagamentoRecusadoIntegrationEvent>()).Should().BeFalse();
+            (await harness.Published.Any<PagamentoConfirmadoEvent>()).Should().BeFalse();
+            (await harness.Published.Any<PagamentoRecusadoEvent>()).Should().BeFalse();
 
-            // Tentativas incrementadas mas estado não terminal.
             pagamento.TentativasVerificacao.Should().Be(1);
             pagamento.PodeReverificar.Should().BeTrue();
         }
@@ -153,10 +150,9 @@ public class VerificarStatusPagamentoConsumerTests
     }
 
     [Fact]
-    public async Task Consume_StatusPendingNoLimite_ExpiraEPublicaIntegrationEvent()
+    public async Task Consume_StatusPendingNoLimite_ExpiraEPublicaRecusadoEvent()
     {
         var (repo, uow, mp, metrics, scheduler) = NewMocks();
-        // Limite 1 e a chamada incrementa tentativa para 1 → não pode mais reverificar.
         var pagamento = new PagamentoBuilder().WithLimiteVerificacoes(1).BuildAguardandoConfirmacao();
         repo.Setup(r => r.GetByIdAsync(pagamento.Id)).ReturnsAsync(pagamento);
         mp.Setup(m => m.GetPaymentStatusAsync(pagamento.Id, It.IsAny<CancellationToken>()))
@@ -170,7 +166,7 @@ public class VerificarStatusPagamentoConsumerTests
             await harness.Bus.Publish(new ExecuteVerificarStatusPagamento(pagamento.Id));
 
             (await harness.Consumed.Any<ExecuteVerificarStatusPagamento>()).Should().BeTrue();
-            (await harness.Published.Any<PagamentoRecusadoIntegrationEvent>()).Should().BeTrue();
+            (await harness.Published.Any<PagamentoRecusadoEvent>()).Should().BeTrue();
             (await harness.Published.Any<PagamentoOperationCompleted>()).Should().BeTrue();
 
             metrics.Verify(m => m.PagamentoExpirado(), Times.Once);
@@ -182,7 +178,7 @@ public class VerificarStatusPagamentoConsumerTests
     }
 
     [Fact]
-    public async Task Consume_StatusExpired_ExpiraEPublicaIntegrationEvent()
+    public async Task Consume_StatusExpired_ExpiraEPublicaRecusadoEvent()
     {
         var (repo, uow, mp, metrics, scheduler) = NewMocks();
         var pagamento = new PagamentoBuilder().BuildAguardandoConfirmacao();
@@ -198,7 +194,7 @@ public class VerificarStatusPagamentoConsumerTests
             await harness.Bus.Publish(new ExecuteVerificarStatusPagamento(pagamento.Id));
 
             (await harness.Consumed.Any<ExecuteVerificarStatusPagamento>()).Should().BeTrue();
-            (await harness.Published.Any<PagamentoRecusadoIntegrationEvent>()).Should().BeTrue();
+            (await harness.Published.Any<PagamentoRecusadoEvent>()).Should().BeTrue();
             (await harness.Published.Any<PagamentoOperationCompleted>()).Should().BeTrue();
 
             metrics.Verify(m => m.PagamentoExpirado(), Times.Once);

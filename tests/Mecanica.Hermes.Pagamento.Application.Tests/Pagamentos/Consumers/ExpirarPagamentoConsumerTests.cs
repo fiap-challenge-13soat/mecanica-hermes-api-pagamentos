@@ -43,7 +43,7 @@ public class ExpirarPagamentoConsumerTests
             await harness.Bus.Publish(new ExecuteExpirarPagamento(pagamento.Id));
 
             (await harness.Consumed.Any<ExecuteExpirarPagamento>()).Should().BeTrue();
-            (await harness.Published.Any<PagamentoRecusadoIntegrationEvent>(
+            (await harness.Published.Any<PagamentoRecusadoEvent>(
                 ctx => ctx.Context.Message.PagamentoId == pagamento.Id))
                 .Should().BeTrue();
             (await harness.Published.Any<PagamentoOperationCompleted>()).Should().BeTrue();
@@ -83,7 +83,7 @@ public class ExpirarPagamentoConsumerTests
 
             (await harness.Consumed.Any<ExecuteExpirarPagamento>()).Should().BeTrue();
             (await harness.Published.Any<PagamentoOperationFailed>()).Should().BeTrue();
-            (await harness.Published.Any<PagamentoRecusadoIntegrationEvent>()).Should().BeFalse();
+            (await harness.Published.Any<PagamentoRecusadoEvent>()).Should().BeFalse();
 
             metrics.Verify(m => m.ErroRegistrado(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
         }

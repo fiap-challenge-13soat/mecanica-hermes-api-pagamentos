@@ -1,11 +1,11 @@
 using FluentAssertions;
 using MassTransit;
 using MassTransit.Testing;
-using Mecanica.Hermes.Application.OrdensDeServico.Messages.Requests;
 using Mecanica.Hermes.Pagamento.Application.Common.Persistence;
 using Mecanica.Hermes.Pagamento.Application.Pagamentos.Consumers;
 using Mecanica.Hermes.Pagamento.Application.Pagamentos.Messages.Commands;
 using Mecanica.Hermes.Pagamento.Application.Pagamentos.Messages.Events;
+using Mecanica.Hermes.Pagamento.Application.Pagamentos.Messages.Integration;
 using Mecanica.Hermes.Pagamento.Application.Pagamentos.Ports;
 using Mecanica.Hermes.Pagamento.Domain.Pagamentos.Enums;
 using Mecanica.Hermes.Pagamento.TestUtils.Builders;
@@ -42,7 +42,7 @@ public class ConfirmarPagamentoConsumerTests
             await harness.Bus.Publish(new ExecuteConfirmarPagamento(pagamento.Id, PagamentoConfirmadoVia.Webhook));
 
             (await harness.Consumed.Any<ExecuteConfirmarPagamento>()).Should().BeTrue();
-            (await harness.Published.Any<PagamentoAprovadoRequest>(
+            (await harness.Published.Any<PagamentoConfirmadoEvent>(
                 ctx => ctx.Context.Message.OrdemDeServicoId == pagamento.OrdemDeServicoId))
                 .Should().BeTrue();
             (await harness.Published.Any<PagamentoOperationCompleted>())
