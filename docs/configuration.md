@@ -56,6 +56,13 @@ Todas as variáveis usam **double-underscore** (`__`) para mapeamento ASP.NET Co
 | `OUTBOX__MAX_RETRIES` | `10` | Tentativas antes de DLQ. |
 | `OUTBOX__PROCESSED_RETENTION_DAYS` | `7` | Tempo de retenção dos `Processed`. |
 
+## Cadastros API (M2M)
+
+| Variável | Default | Descrição |
+| --- | --- | --- |
+| `CADASTROS_API__BASE_URL` | `http://localhost:5000` | URL base da API de Cadastros. Usada pelo `ClienteApiClient` para consultar dados do cliente ao criar pagamento. |
+| `AUTH__SERVICO_SCOPE` | `servico-scope` | Scope JWT incluído no token M2M para autenticar em Cadastros. O endpoint `GET /api/clientes/{id}` aceita este scope. |
+
 ## Auth
 
 | Variável | Default | Descrição |
