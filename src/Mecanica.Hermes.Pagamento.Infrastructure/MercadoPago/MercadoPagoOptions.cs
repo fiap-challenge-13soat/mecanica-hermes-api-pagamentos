@@ -9,4 +9,5 @@ public sealed class MercadoPagoOptions
     public string SuccessUrl { get; set; } = string.Empty;
     public string FailureUrl { get; set; } = string.Empty;
     public string PendingUrl { get; set; } = string.Empty;
+    public string ApiBaseUrl { get; set; } = "https://api.mercadopago.com";
 }

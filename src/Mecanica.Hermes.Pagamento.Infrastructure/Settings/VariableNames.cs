@@ -39,6 +39,7 @@ internal static class VariableNames
     public const string MercadoPagoSuccessUrl = "MERCADO_PAGO__SUCCESS_URL";
     public const string MercadoPagoFailureUrl = "MERCADO_PAGO__FAILURE_URL";
     public const string MercadoPagoPendingUrl = "MERCADO_PAGO__PENDING_URL";
+    public const string MercadoPagoApiBaseUrl = "MERCADO_PAGO__API_BASE_URL";
 
     // Pagamento — comportamento de polling/timeout
     public const string PagamentoPollingInterval = "PAGAMENTO__POLLING_INTERVAL";

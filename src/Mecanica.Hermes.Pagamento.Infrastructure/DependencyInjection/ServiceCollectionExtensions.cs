@@ -49,9 +49,16 @@ public static class ServiceCollectionExtensions
             options.SuccessUrl = Environment.GetEnvironmentVariable(VariableNames.MercadoPagoSuccessUrl) ?? string.Empty;
             options.FailureUrl = Environment.GetEnvironmentVariable(VariableNames.MercadoPagoFailureUrl) ?? string.Empty;
             options.PendingUrl = Environment.GetEnvironmentVariable(VariableNames.MercadoPagoPendingUrl) ?? string.Empty;
+            options.ApiBaseUrl = Environment.GetEnvironmentVariable(VariableNames.MercadoPagoApiBaseUrl)
+                                 ?? "https://api.mercadopago.com";
         });
         services.AddSingleton<WebhookSignatureValidator>();
-        services.AddHttpClient<IMercadoPagoClient, MercadoPagoPreferenceClient>()
+        var mpBaseUrl = Environment.GetEnvironmentVariable(VariableNames.MercadoPagoApiBaseUrl)
+                        ?? "https://api.mercadopago.com";
+        services.AddHttpClient<IMercadoPagoClient, MercadoPagoPreferenceClient>(client =>
+            {
+                client.BaseAddress = new Uri(mpBaseUrl.TrimEnd('/') + "/");
+            })
             .AddStandardResilienceHandler(options =>
             {
                 options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(15);
