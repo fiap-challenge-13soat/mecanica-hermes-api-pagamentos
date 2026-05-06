@@ -39,10 +39,10 @@ Os contratos legados foram substituídos por integration events com `[EntityName
 
 | EntityName | Classe | Direção | Payload |
 | --- | --- | --- | --- |
-| `pagamento.confirmado` | `PagamentoConfirmadoEvent` | **Publica** → API de OS | `OrdemDeServicoId`, `PagamentoId`, `ConfirmadoEm` |
-| `pagamento.recusado` | `PagamentoRecusadoEvent` | **Publica** → API de OS | `OrdemDeServicoId`, `PagamentoId`, `Motivo`, `RecusadoEm` |
-| `pagamento.link-gerado` | `LinkPagamentoGeradoEvent` | **Publica** → API de Cadastros | `PagamentoId` |
-| `ordem-de-servico.aguardando-pagamento` | `OrdemDeServicoAguardandoPagamentoEvent` | **Consome** ← API de OS | `OrdemDeServicoId`, `ClienteId`, `Valor` |
+| `pagamento.confirmado.v1` | `PagamentoConfirmadoEvent` | **Publica** → API de OS | `OrdemDeServicoId`, `PagamentoId`, `ConfirmadoEm` |
+| `pagamento.recusado.v1` | `PagamentoRecusadoEvent` | **Publica** → API de OS | `OrdemDeServicoId`, `PagamentoId`, `Motivo`, `RecusadoEm` |
+| `pagamento.link-gerado.v1` | `LinkPagamentoGeradoEvent` | **Publica** → API de Cadastros | `PagamentoId` |
+| `ordem-de-servico.aguardando-pagamento.v1` | `OrdemDeServicoAguardandoPagamentoEvent` | **Consome** ← API de OS | `OrdemDeServicoId`, `ClienteId`, `Valor` |
 
 ## Contratos migrados para `[EntityName]` canônico
 
@@ -50,9 +50,9 @@ Os contratos legados foram removidos e substituídos por integration events com 
 
 | Contrato legado (removido) | Substituto | EntityName |
 | --- | --- | --- |
-| `PagamentoAprovadoRequest` (namespace OS) | `PagamentoConfirmadoEvent` | `pagamento.confirmado` |
-| `PagamentoRecusadoIntegrationEvent` | `PagamentoRecusadoEvent` | `pagamento.recusado` |
-| `EnviarEmailPagamentoCommand` | `LinkPagamentoGeradoEvent` | `pagamento.link-gerado` |
+| `PagamentoAprovadoRequest` (namespace OS) | `PagamentoConfirmadoEvent` | `pagamento.confirmado.v1` |
+| `PagamentoRecusadoIntegrationEvent` | `PagamentoRecusadoEvent` | `pagamento.recusado.v1` |
+| `EnviarEmailPagamentoCommand` | `LinkPagamentoGeradoEvent` | `pagamento.link-gerado.v1` |
 
 O principal motivador foi eliminar o namespace-alignment hack (`PagamentoAprovadoRequest` no namespace da API de OS), que acoplava o código de Pagamentos ao namespace de OS.
 

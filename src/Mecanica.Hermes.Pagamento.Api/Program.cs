@@ -98,7 +98,7 @@ builder.Services.AddRateLimiter(options =>
 });
 
 builder.Services.AddHealthChecks()
-    .AddInfrastructureHealthChecks(HealthCheckTags.Ready, HealthCheckTags.Database);
+    .AddInfrastructureHealthChecks(HealthCheckTags.Ready, HealthCheckTags.Database, HealthCheckTags.Saga);
 
 builder.Host.ConfigureHostBuilder();
 

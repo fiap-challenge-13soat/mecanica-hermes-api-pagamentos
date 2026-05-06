@@ -9,9 +9,9 @@ namespace Mecanica.Hermes.Pagamento.Infrastructure.HealthChecks;
 public static class InfrastructureHealthChecksExtensions
 {
     /// <summary>
-    ///     Registra os health checks de infraestrutura: MongoDB (database principal) +
-    ///     MongoDB SAGA (somente conexão de pong). Use as tags <c>"ready"</c> e
-    ///     <c>"database"</c> para incluir em <c>/healthz/ready</c>.
+    ///     Registra os health checks de infraestrutura: MongoDB (database principal,
+    ///     também usado pela SAGA — mesmo cluster). Use as tags <c>Database</c>,
+    ///     <c>Saga</c> e <c>Ready</c> para incluir em <c>/healthz/ready</c>.
     /// </summary>
     public static IHealthChecksBuilder AddInfrastructureHealthChecks(
         this IHealthChecksBuilder builder,

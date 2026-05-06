@@ -77,6 +77,7 @@ public static class WebApplicationBuilderExtensions
                     ["service.name"] = OtlpEnvironment.ResolveServiceName("mecanica-hermes-pagamento-api"),
                     ["k8s.pod.name"] = EnvironmentDetector.PodName,
                     ["k8s.namespace.name"] = EnvironmentDetector.PodNamespace,
+                    ["k8s.node.name"] = EnvironmentDetector.NodeName,
                     ["k8s.cluster.name"] = EnvironmentDetector.ClusterName
                 };
             });
