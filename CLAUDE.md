@@ -2,6 +2,37 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Ecosystem Context
+
+This repository is **one of five** in the Mecânica Hermes ecosystem. They live as siblings under
+`C:\git\mecanica-hermes\` (or equivalent). When working here, keep in mind:
+
+| Repo | Role | Key tech |
+|---|---|---|
+| `mecanica-hermes-api-pagamentos` | **This repo** — integração Mercado Pago, gera link, recebe webhook MP, polling de status | .NET 10, MongoDB |
+| `mecanica-hermes-api-ordem-servico` | Orquestra ordens de serviço (state machine, SAGA principal) | .NET 10, PostgreSQL, RabbitMQ |
+| `mecanica-hermes-cadastros` | Cadastros de Clientes e Produtos; recebe webhook de aprovação/rejeição de orçamento | .NET 10, PostgreSQL |
+| `mecanica-hermes-tests-e2e` | Suíte E2E Robot Framework BDD cobrindo as 3 APIs em Docker Compose | Python 3.11, Robot Framework, Allure |
+| `mecanica-hermes-shared-sdk` | SDK compartilhado em GitHub Packages (6 pacotes NuGet) | .NET 10, MassTransit.Abstractions |
+
+### Cross-service integration
+
+- **Mensageria** (RabbitMQ via MassTransit): 4 eventos versionados via `[EntityName(".v1")]` que
+  esta API publica/consome (ver "Cross-service Integration Events" abaixo). O sufixo `.v1` é
+  contrato — qualquer mudança de schema cria `.v2` em paralelo (deprecation window).
+- **HTTP M2M**: esta API consome `GET /api/clientes/{id}` do Cadastros para obter dados do cliente
+  ao gerar link Mercado Pago (autenticação via JWT M2M; no Development o
+  `DevelopmentAuthenticationMiddleware` bypassa).
+- **Webhook signed**: o endpoint `POST /api/webhooks/mercadopago` é público mas validado por HMAC
+  via `MERCADO_PAGO__WEBHOOK_SECRET`.
+
+### Shared SDK status (em adoção)
+
+PR #1 do `mecanica-hermes-shared-sdk` ainda **não foi mergeado** quando este CLAUDE.md foi escrito.
+Quando for: 6 pacotes NuGet (`Mecanica.Hermes.Shared.Core`, `.Application`, `.AspNetCore`,
+`.Observability`, `.MassTransit`, `Mecanica.Hermes.Contracts`) substituirão ~700 linhas duplicadas
+entre os 3 repos de API. Até lá, **não mover código para o SDK** sem alinhar com o usuário primeiro.
+
 ## Commands
 
 ```bash
@@ -131,6 +162,21 @@ similar to the OS service. Two extra mechanisms specific to payments:
 When the saga confirms approval, it publishes
 `Mecanica.Hermes.Pagamento.Application.Pagamentos.Messages.Integration.PagamentoAprovadoRequest`
 — a `record (Guid OrdemDeServicoId)` that matches the contract consumed by the OS saga.
+
+### Cross-service Integration Events
+
+4 contratos cross-service publicados/consumidos por esta API. Todos versionados com sufixo `.v1`
+no `[EntityName]` (kebab-case):
+
+| Direção | Evento (`EntityName`) | Quando |
+|---|---|---|
+| Consome ← | `ordem-de-servico.aguardando-pagamento.v1` | OS pediu pagamento — gera link MP |
+| Publica → | `link-pagamento-gerado.v1` | Após `LinkGerado`, dispara envio do email |
+| Publica → | `pagamento.confirmado.v1` | SAGA confirma `Pago` (via webhook ou polling) |
+| Publica → | `pagamento.recusado.v1` | SAGA confirma `Recusado` ou `Expirado` |
+
+**Regra de evolução**: nunca alterar a forma de um evento publicado — sempre criar `.v2` em
+paralelo e drenar `.v1` antes de removê-lo.
 
 ### Endpoint Registration Pattern
 
