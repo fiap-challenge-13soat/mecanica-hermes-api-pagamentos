@@ -1,5 +1,5 @@
 using Mecanica.Hermes.Pagamento.Application.Pagamentos.Dtos;
-using Mecanica.Hermes.Pagamento.Domain.Common.Results;
+using Mecanica.Hermes.Shared.Core.Results;
 using MediatR;
 
 namespace Mecanica.Hermes.Pagamento.Application.Pagamentos.Queries.GetPagamentoById;

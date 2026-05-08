@@ -2,6 +2,9 @@
     <ItemGroup>
         <PackageReference Include="MassTransit.Abstractions"/>
         <PackageReference Include="MediatR"/>
+        <PackageReference Include="Mecanica.Hermes.Shared.Core"/>
+        <PackageReference Include="Mecanica.Hermes.Shared.Application"/>
+        <PackageReference Include="Mecanica.Hermes.Contracts"/>
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\Mecanica.Hermes.Pagamento.Domain\Mecanica.Hermes.Pagamento.Domain.csproj"/>

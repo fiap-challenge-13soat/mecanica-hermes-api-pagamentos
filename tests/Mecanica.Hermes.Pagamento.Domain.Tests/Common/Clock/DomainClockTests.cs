@@ -1,5 +1,5 @@
 using FluentAssertions;
-using Mecanica.Hermes.Pagamento.Domain.Common.Clock;
+using Mecanica.Hermes.Shared.Core.Domain;
 using Xunit;
 
 namespace Mecanica.Hermes.Pagamento.Domain.Tests.Common.Clock;

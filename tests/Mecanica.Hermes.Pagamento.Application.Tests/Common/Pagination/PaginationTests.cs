@@ -1,5 +1,5 @@
 using FluentAssertions;
-using Mecanica.Hermes.Pagamento.Application.Common.Pagination;
+using Mecanica.Hermes.Shared.Core.Pagination;
 using Xunit;
 
 namespace Mecanica.Hermes.Pagamento.Application.Tests.Common.Pagination;

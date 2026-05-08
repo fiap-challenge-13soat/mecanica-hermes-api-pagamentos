@@ -8,9 +8,12 @@ using Mecanica.Hermes.Pagamento.Api.Endpoints.Pagamentos.Contracts;
 using Mecanica.Hermes.Pagamento.Api.Endpoints.Pagamentos.Validators;
 using Mecanica.Hermes.Pagamento.Api.Endpoints.Webhooks;
 using Mecanica.Hermes.Pagamento.Api.Middleware;
-using Mecanica.Hermes.Pagamento.Domain.Common;
 using Mecanica.Hermes.Pagamento.Infrastructure.DependencyInjection;
 using Mecanica.Hermes.Pagamento.Infrastructure.HealthChecks;
+using Mecanica.Hermes.Pagamento.Infrastructure.Settings;
+using Mecanica.Hermes.Shared.AspNetCore;
+using Mecanica.Hermes.Shared.AspNetCore.Middleware;
+using Mecanica.Hermes.Shared.Core;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Http;
@@ -117,7 +120,10 @@ app.MapScalarApiReference();
 
 if (app.Environment.IsDevelopment() || app.Environment.EnvironmentName == EnvironmentNames.Testing)
 {
-    app.UseDevelopmentAuthentication();
+    app.UseDevelopmentAuthentication(new DevelopmentAuthenticationOptions
+    {
+        Scopes = [AuthPolicies.OnlyAdminScope, AuthPolicies.AllowClienteScope]
+    });
     app.Logger.LogWarning(
         "DevelopmentAuthenticationMiddleware ENABLED — environment: {Environment}. " +
         "All unauthenticated requests will be granted full access. " +

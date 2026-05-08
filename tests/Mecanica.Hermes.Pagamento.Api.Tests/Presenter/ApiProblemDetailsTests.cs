@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Mecanica.Hermes.Pagamento.Api.Presenter;
+using Mecanica.Hermes.Shared.AspNetCore.Presenter;
 using Microsoft.AspNetCore.Mvc;
 using Xunit;
 

@@ -1,7 +1,8 @@
 using FluentAssertions;
 using Mecanica.Hermes.Pagamento.Application.Common.Behaviors;
+using Mecanica.Hermes.Shared.Application.Behaviors;
 using Mecanica.Hermes.Pagamento.Application.Pagamentos.Commands;
-using Mecanica.Hermes.Pagamento.Domain.Common.Results;
+using Mecanica.Hermes.Shared.Core.Results;
 using MediatR;
 using Xunit;
 

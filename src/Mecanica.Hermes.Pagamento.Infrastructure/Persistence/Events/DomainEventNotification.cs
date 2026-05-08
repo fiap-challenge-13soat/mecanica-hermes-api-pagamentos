@@ -1,4 +1,5 @@
 using Mecanica.Hermes.Pagamento.Domain.Common.Abstractions;
+using Mecanica.Hermes.Shared.Core.Domain;
 using MediatR;
 
 namespace Mecanica.Hermes.Pagamento.Infrastructure.Persistence.Events;

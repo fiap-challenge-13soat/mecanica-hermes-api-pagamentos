@@ -3,7 +3,7 @@ using MassTransit;
 using MassTransit.Testing;
 using Mecanica.Hermes.Pagamento.Application.Pagamentos.Consumers.Integration;
 using Mecanica.Hermes.Pagamento.Application.Pagamentos.Dtos;
-using Mecanica.Hermes.Pagamento.Application.Pagamentos.Messages.Integration;
+using Mecanica.Hermes.Contracts.Integration;
 using Mecanica.Hermes.Pagamento.Application.Pagamentos.Messages.Requests;
 using Mecanica.Hermes.Pagamento.Application.Pagamentos.Ports;
 using Microsoft.Extensions.DependencyInjection;

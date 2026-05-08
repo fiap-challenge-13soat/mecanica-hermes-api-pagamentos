@@ -1,4 +1,4 @@
-using Mecanica.Hermes.Pagamento.Domain.Common.Results;
+using Mecanica.Hermes.Shared.Core.Results;
 
 namespace Mecanica.Hermes.Pagamento.Domain.Pagamentos.ValueObjects;
 

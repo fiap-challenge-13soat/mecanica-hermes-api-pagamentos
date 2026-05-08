@@ -1,6 +1,6 @@
 using System.Net;
 using FluentAssertions;
-using Mecanica.Hermes.Pagamento.Domain.Common.Results;
+using Mecanica.Hermes.Shared.Core.Results;
 using Xunit;
 
 namespace Mecanica.Hermes.Pagamento.Domain.Tests.Common.Results;

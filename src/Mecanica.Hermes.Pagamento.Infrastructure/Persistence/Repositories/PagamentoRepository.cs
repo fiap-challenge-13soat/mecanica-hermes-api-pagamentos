@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
-using Mecanica.Hermes.Pagamento.Application.Common.Exceptions;
-using Mecanica.Hermes.Pagamento.Application.Common.Pagination;
-using Mecanica.Hermes.Pagamento.Application.Common.Persistence;
+using Mecanica.Hermes.Shared.Core.Persistence;
+using Mecanica.Hermes.Shared.Core.Pagination;
+using Mecanica.Hermes.Shared.Core.Persistence;
 using Mecanica.Hermes.Pagamento.Application.Pagamentos.Ports;
 using Mecanica.Hermes.Pagamento.Domain.Pagamentos.Enums;
 using Mecanica.Hermes.Pagamento.Infrastructure.Persistence.Entities;

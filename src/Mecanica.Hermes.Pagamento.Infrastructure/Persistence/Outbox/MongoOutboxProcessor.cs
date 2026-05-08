@@ -4,6 +4,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Mecanica.Hermes.Pagamento.Domain.Common.Abstractions;
 using Mecanica.Hermes.Pagamento.Infrastructure.Observability;
+using Mecanica.Hermes.Shared.Core.Domain;
+using Mecanica.Hermes.Shared.Observability;
 using Mecanica.Hermes.Pagamento.Infrastructure.Persistence.Entities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;

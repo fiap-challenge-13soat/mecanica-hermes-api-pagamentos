@@ -1,5 +1,5 @@
 using MassTransit;
-using Mecanica.Hermes.Pagamento.Application.Pagamentos.Messages.Integration;
+using Mecanica.Hermes.Contracts.Integration;
 using Mecanica.Hermes.Pagamento.Application.Pagamentos.Messages.Requests;
 using Mecanica.Hermes.Pagamento.Application.Pagamentos.Ports;
 

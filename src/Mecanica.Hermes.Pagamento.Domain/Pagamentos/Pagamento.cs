@@ -1,5 +1,6 @@
 using Mecanica.Hermes.Pagamento.Domain.Common.Abstractions;
-using Mecanica.Hermes.Pagamento.Domain.Common.Results;
+using Mecanica.Hermes.Shared.Core.Domain;
+using Mecanica.Hermes.Shared.Core.Results;
 using Mecanica.Hermes.Pagamento.Domain.Pagamentos.Abstractions;
 using Mecanica.Hermes.Pagamento.Domain.Pagamentos.Enums;
 using Mecanica.Hermes.Pagamento.Domain.Pagamentos.Events;

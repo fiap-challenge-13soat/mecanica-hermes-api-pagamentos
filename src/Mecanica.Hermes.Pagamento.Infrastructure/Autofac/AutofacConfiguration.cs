@@ -2,7 +2,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Autofac;
 using Mecanica.Hermes.Pagamento.Application.Common.Messaging;
-using Mecanica.Hermes.Pagamento.Domain.Common.Results;
+using Mecanica.Hermes.Shared.Application.Messaging;
+using Mecanica.Hermes.Shared.Core.Results;
 using MediatR;
 using Module = Autofac.Module;
 

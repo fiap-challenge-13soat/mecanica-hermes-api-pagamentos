@@ -1,9 +1,10 @@
 using MassTransit;
 using Mecanica.Hermes.Pagamento.Application.Common.Messaging;
-using Mecanica.Hermes.Pagamento.Application.Common.Persistence;
+using Mecanica.Hermes.Shared.Application.Messaging;
+using Mecanica.Hermes.Shared.Core.Persistence;
 using Mecanica.Hermes.Pagamento.Application.Pagamentos.Constants;
 using Mecanica.Hermes.Pagamento.Application.Pagamentos.Messages.Commands;
-using Mecanica.Hermes.Pagamento.Application.Pagamentos.Messages.Integration;
+using Mecanica.Hermes.Contracts.Integration;
 using Mecanica.Hermes.Pagamento.Application.Pagamentos.Messages.Requests;
 using Mecanica.Hermes.Pagamento.Application.Pagamentos.Ports;
 

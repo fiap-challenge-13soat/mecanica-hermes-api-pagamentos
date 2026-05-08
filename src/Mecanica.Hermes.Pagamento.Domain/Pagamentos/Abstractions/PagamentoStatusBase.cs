@@ -1,6 +1,7 @@
 using Mecanica.Hermes.Pagamento.Domain.Common.Abstractions;
-using Mecanica.Hermes.Pagamento.Domain.Common.Clock;
-using Mecanica.Hermes.Pagamento.Domain.Common.Results;
+using Mecanica.Hermes.Shared.Core.Domain;
+using Mecanica.Hermes.Shared.Core.Domain;
+using Mecanica.Hermes.Shared.Core.Results;
 using Mecanica.Hermes.Pagamento.Domain.Pagamentos.Enums;
 
 namespace Mecanica.Hermes.Pagamento.Domain.Pagamentos.Abstractions;

@@ -2,7 +2,7 @@ using System.Net;
 using System.Text.Json;
 using FluentAssertions;
 using Mecanica.Hermes.Pagamento.Api.Middleware;
-using Mecanica.Hermes.Pagamento.Domain.Common;
+using Mecanica.Hermes.Shared.Core;
 using Mecanica.Hermes.Pagamento.Infrastructure.MassTransit.Adapters;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.FileProviders;

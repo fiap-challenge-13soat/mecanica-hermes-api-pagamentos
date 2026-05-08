@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Mecanica.Hermes.Pagamento.Application.Common.Messaging;
+using Mecanica.Hermes.Shared.Application.Messaging;
 using Mecanica.Hermes.Pagamento.Application.Pagamentos.Commands.GerarPagamento;
 using Mecanica.Hermes.Pagamento.Application.Pagamentos.Messages.Requests;
 using Moq;

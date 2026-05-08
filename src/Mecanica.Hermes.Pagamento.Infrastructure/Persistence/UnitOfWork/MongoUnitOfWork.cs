@@ -1,8 +1,9 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
-using Mecanica.Hermes.Pagamento.Application.Common.Persistence;
+using Mecanica.Hermes.Shared.Core.Persistence;
 using Mecanica.Hermes.Pagamento.Domain.Common.Abstractions;
+using Mecanica.Hermes.Shared.Core.Domain;
 using Mecanica.Hermes.Pagamento.Infrastructure.Persistence.Entities;
 using Microsoft.Extensions.Logging;
 

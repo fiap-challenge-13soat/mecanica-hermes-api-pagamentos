@@ -4,11 +4,20 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
+# GitHub Packages credentials — used by nuget.config para baixar
+# Mecanica.Hermes.Shared.* da org fiap-challenge-13soat. Passados como build-args
+# pelo workflow Docker (`--build-arg GITHUB_USERNAME=... --build-arg GITHUB_TOKEN=...`).
+ARG GITHUB_USERNAME
+ARG GITHUB_TOKEN
+ENV GITHUB_USERNAME=${GITHUB_USERNAME} \
+    GITHUB_TOKEN=${GITHUB_TOKEN}
+
 # Copy solution-level config first — these change rarely so the restore layer
 # stays cached across code-only changes.
 COPY Mecanica.Hermes.Pagamento.sln           .
 COPY Directory.Build.props                   .
 COPY Directory.Packages.props                .
+COPY nuget.config                            .
 
 # Copy only the *.csproj files needed for the runtime image (no test projects).
 # Docker caches the restore layer as long as these files don't change.

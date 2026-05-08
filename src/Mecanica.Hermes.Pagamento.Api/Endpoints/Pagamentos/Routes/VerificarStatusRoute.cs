@@ -1,5 +1,7 @@
+using Mecanica.Hermes.Shared.AspNetCore.Endpoints;
 using System.Diagnostics.CodeAnalysis;
 using Mecanica.Hermes.Pagamento.Api.Presenter;
+using Mecanica.Hermes.Shared.AspNetCore.Presenter;
 using Mecanica.Hermes.Pagamento.Application.Pagamentos.Commands.VerificarStatus;
 using Mecanica.Hermes.Pagamento.Infrastructure.Settings;
 using MediatR;

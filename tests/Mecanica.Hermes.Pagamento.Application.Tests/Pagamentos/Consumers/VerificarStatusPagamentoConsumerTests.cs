@@ -1,11 +1,11 @@
 using FluentAssertions;
 using MassTransit;
 using MassTransit.Testing;
-using Mecanica.Hermes.Pagamento.Application.Common.Persistence;
+using Mecanica.Hermes.Shared.Core.Persistence;
 using Mecanica.Hermes.Pagamento.Application.Pagamentos.Consumers;
 using Mecanica.Hermes.Pagamento.Application.Pagamentos.Messages.Commands;
 using Mecanica.Hermes.Pagamento.Application.Pagamentos.Messages.Events;
-using Mecanica.Hermes.Pagamento.Application.Pagamentos.Messages.Integration;
+using Mecanica.Hermes.Contracts.Integration;
 using Mecanica.Hermes.Pagamento.Application.Pagamentos.Messages.Requests;
 using Mecanica.Hermes.Pagamento.Application.Pagamentos.Ports;
 using Mecanica.Hermes.Pagamento.TestUtils.Builders;

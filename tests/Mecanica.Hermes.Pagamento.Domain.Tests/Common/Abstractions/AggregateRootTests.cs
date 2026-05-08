@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Mecanica.Hermes.Pagamento.Domain.Common.Abstractions;
+using Mecanica.Hermes.Shared.Core.Domain;
 using Xunit;
 
 namespace Mecanica.Hermes.Pagamento.Domain.Tests.Common.Abstractions;

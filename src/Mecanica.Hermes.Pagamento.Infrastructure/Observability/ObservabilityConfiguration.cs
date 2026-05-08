@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Mecanica.Hermes.Pagamento.Infrastructure.Persistence.Outbox;
+using Mecanica.Hermes.Shared.Observability;
 using Microsoft.Extensions.DependencyInjection;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;

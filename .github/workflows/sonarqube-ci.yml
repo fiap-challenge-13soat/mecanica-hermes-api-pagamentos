@@ -10,6 +10,7 @@ on:
 permissions:
   contents: read
   pull-requests: read
+  packages: read
 
 concurrency:
   group: sonar-${{ github.ref }}
@@ -73,6 +74,8 @@ jobs:
       - name: Build, test and analyze
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_USERNAME: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Em eventos pull_request, github.head_ref/base_ref e o número do PR
           # alimentam as propriedades sonar.pullrequest.* — sem isso, o run é
           # registrado como branch analysis e a decoração no PR não acontece.

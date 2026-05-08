@@ -4,6 +4,12 @@
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
   <ItemGroup>
+    <!-- Mecanica Hermes Shared SDK (GitHub Packages: fiap-challenge-13soat) -->
+    <PackageVersion Include="Mecanica.Hermes.Shared.Core" Version="1.0.0" />
+    <PackageVersion Include="Mecanica.Hermes.Shared.Application" Version="1.0.0" />
+    <PackageVersion Include="Mecanica.Hermes.Shared.AspNetCore" Version="1.0.0" />
+    <PackageVersion Include="Mecanica.Hermes.Shared.Observability" Version="1.0.0" />
+    <PackageVersion Include="Mecanica.Hermes.Contracts" Version="1.0.0" />
     <!-- Logging -->
     <PackageVersion Include="Serilog" Version="4.3.1" />
     <PackageVersion Include="Serilog.AspNetCore" Version="10.0.0" />
