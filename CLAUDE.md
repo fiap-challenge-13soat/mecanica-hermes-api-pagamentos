@@ -26,12 +26,27 @@ This repository is **one of five** in the Mecânica Hermes ecosystem. They live 
 - **Webhook signed**: o endpoint `POST /api/webhooks/mercadopago` é público mas validado por HMAC
   via `MERCADO_PAGO__WEBHOOK_SECRET`.
 
-### Shared SDK status (em adoção)
+### Shared SDK adotado (v1.0.0)
 
-PR #1 do `mecanica-hermes-shared-sdk` ainda **não foi mergeado** quando este CLAUDE.md foi escrito.
-Quando for: 6 pacotes NuGet (`Mecanica.Hermes.Shared.Core`, `.Application`, `.AspNetCore`,
-`.Observability`, `.MassTransit`, `Mecanica.Hermes.Contracts`) substituirão ~700 linhas duplicadas
-entre os 3 repos de API. Até lá, **não mover código para o SDK** sem alinhar com o usuário primeiro.
+Pagamentos consome 5 dos 6 pacotes publicados em GitHub Packages na org `fiap-challenge-13soat`:
+
+| Pacote | Onde é usado |
+|---|---|
+| `Mecanica.Hermes.Shared.Core` | `Result<T>`, `BaseDomain`, `AggregateRoot`, `IDomainEvent`, `IUnitOfWork`, `ConcurrencyConflictException`, `PaginationParams`, `PagedResult`, `EnvironmentNames` |
+| `Mecanica.Hermes.Shared.Application` | `IAsyncCommand`, `IAsyncMessagePublisher`, `AsyncCommandHandler`, `LoggingBehavior` |
+| `Mecanica.Hermes.Shared.AspNetCore` | `CorrelationIdMiddleware`, `DevelopmentAuthenticationMiddleware`, `ApiProblemDetails`, `HealthCheckTags`, `ValidationFilter`, `EndpointConventions` |
+| `Mecanica.Hermes.Shared.Observability` | `ActivitySources` (source `MecanicaHermes.Api`) |
+| `Mecanica.Hermes.Contracts` | 4 events `.v1` (publica `LinkPagamentoGerado`, `PagamentoConfirmado`, `PagamentoRecusado`; consome `OrdemDeServicoAguardandoPagamento`) |
+
+`Mecanica.Hermes.Shared.MassTransit` não é consumido — Pagamentos tem própria configuração de
+SAGA + retry/redelivery em `Infrastructure/MassTransit/Configurations/`.
+
+### nuget.config — credenciais para baixar do SDK
+
+Restore em local/CI requer `GITHUB_USERNAME` (handle do GitHub) + `GITHUB_TOKEN` (PAT classic
+com `read:packages` + SSO autorizado para `fiap-challenge-13soat`). **Fine-grained PATs não
+funcionam** com `nuget.pkg.github.com` (limitação atual da plataforma). Em CI o
+`GITHUB_TOKEN` injetado pelo Actions já tem `packages: read` quando declarado no workflow.
 
 ## Commands
 
@@ -177,6 +192,31 @@ no `[EntityName]` (kebab-case):
 
 **Regra de evolução**: nunca alterar a forma de um evento publicado — sempre criar `.v2` em
 paralelo e drenar `.v1` antes de removê-lo.
+
+### DLQ observability
+
+`MessagingFaultObserver` (`Infrastructure/MassTransit/Observability/`) é um
+`IConsumeObserver` global encadeado em `BusFactoryConfiguratorExtensions.ConfigureCommonFactory`.
+Quando `ConsumeFault<T>` dispara (após retry imediato 3x + delayed redelivery 3x exponencial),
+emite counter `messaging.consume_faults` com tags `message_type`/`exception_type` no meter
+`MecanicaHermes.Pagamento.Messaging`. Sinaliza problemas críticos de integração com Mercado Pago
+(API MP indisponível além de 2min, schema drift no payload do webhook, bug determinístico no
+`ExecuteGerarLinkPagamento`/`ExecuteConfirmarPagamento`).
+
+### M2M JWT (Pagamentos → Cadastros)
+
+Quando Pagamentos chama `GET /api/clientes/{id}` em Cadastros, o `M2MAuthorizationDelegatingHandler`
+(`Infrastructure/HttpClients/M2M/`) injeta `Authorization: Bearer <jwt>` automaticamente. Componentes:
+
+- `IM2MTokenProvider` / `ClientCredentialsTokenProvider` — OAuth 2.0 Client Credentials,
+  cacheia token em memória até `expires_in - safety_margin` (default 60s), `SemaphoreSlim`
+  serializa refresh em concorrência.
+- Encadeado **antes** do `StandardResilienceHandler` para que 401 transient force refresh.
+- **Habilitado quando** `M2M__TOKEN_ENDPOINT` está preenchido. Em DEV/Testing as 4 env vars
+  `M2M__*` ficam vazias → handler **não** é encadeado → request sai sem Authorization →
+  Cadastros bypassa via `DevelopmentAuthenticationMiddleware`. Sem regressão em ambientes locais.
+- Em produção: `M2M__TOKEN_ENDPOINT/CLIENT_ID/CLIENT_SECRET/SCOPE` obrigatórios. Scope mapeia
+  para policy `AllowServicoOrAdminScope` em Cadastros (ADR-006 de Cadastros).
 
 ### Endpoint Registration Pattern
 
