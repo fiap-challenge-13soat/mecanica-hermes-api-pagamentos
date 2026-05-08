@@ -24,7 +24,7 @@ namespace Mecanica.Hermes.Pagamento.Infrastructure.HttpClients.M2M;
 ///         </item>
 ///     </list>
 /// </summary>
-internal sealed class ClientCredentialsTokenProvider(
+internal sealed partial class ClientCredentialsTokenProvider(
     HttpClient httpClient,
     IOptions<M2MTokenProviderOptions> options,
     TimeProvider timeProvider,
@@ -65,9 +65,7 @@ internal sealed class ClientCredentialsTokenProvider(
                 .AddSeconds(token.ExpiresIn)
                 .Subtract(_options.ExpirationSafetyMargin);
 
-            logger.LogInformation(
-                "M2M token renovado. Próxima renovação prevista em {ExpiresAt:O} (expires_in={ExpiresIn}s).",
-                _cachedTokenExpiresAt, token.ExpiresIn);
+            LogTokenRenovado(logger, _cachedTokenExpiresAt, token.ExpiresIn);
 
             return _cachedToken;
         }
@@ -98,9 +96,7 @@ internal sealed class ClientCredentialsTokenProvider(
         if (!response.IsSuccessStatusCode)
         {
             var body = await response.Content.ReadAsStringAsync(ct);
-            logger.LogError(
-                "Falha ao obter M2M token. Status={Status}, Body={Body}",
-                (int)response.StatusCode, body);
+            LogFalhaObterToken(logger, (int)response.StatusCode, body);
             response.EnsureSuccessStatusCode();
         }
 
@@ -119,4 +115,14 @@ internal sealed class ClientCredentialsTokenProvider(
         int ExpiresIn,
         [property: JsonPropertyName("token_type")]
         string? TokenType);
+
+    [LoggerMessage(
+        Level = LogLevel.Information,
+        Message = "M2M token renovado. Próxima renovação prevista em {ExpiresAt:O} (expires_in={ExpiresIn}s).")]
+    private static partial void LogTokenRenovado(ILogger logger, DateTimeOffset expiresAt, int expiresIn);
+
+    [LoggerMessage(
+        Level = LogLevel.Error,
+        Message = "Falha ao obter M2M token. Status={Status}, Body={Body}")]
+    private static partial void LogFalhaObterToken(ILogger logger, int status, string body);
 }

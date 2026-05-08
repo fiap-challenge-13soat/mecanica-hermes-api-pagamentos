@@ -15,7 +15,7 @@ namespace Mecanica.Hermes.Pagamento.Infrastructure.MercadoPago;
 ///     <c>https://api.mercadopago.com</c>), o que permite apontar para WireMock em testes E2E.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "Adapter HTTP sobre a API do Mercado Pago — coberto por testes de integração com WireMock.")]
-internal sealed class MercadoPagoPreferenceClient(
+internal sealed partial class MercadoPagoPreferenceClient(
     HttpClient httpClient,
     IOptions<MercadoPagoOptions> options,
     ILogger<MercadoPagoPreferenceClient> logger)
@@ -76,8 +76,7 @@ internal sealed class MercadoPagoPreferenceClient(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex,
-                "Falha ao criar preference no Mercado Pago para PagamentoId={PagamentoId}.", pagamentoId);
+            LogFalhaCriarPreference(logger, ex, pagamentoId);
             throw;
         }
 
@@ -103,8 +102,7 @@ internal sealed class MercadoPagoPreferenceClient(
         }
         catch (Exception ex)
         {
-            logger.LogWarning(ex,
-                "Falha ao consultar status no Mercado Pago para PagamentoId={PagamentoId}.", pagamentoId);
+            LogFalhaConsultarStatus(logger, ex, pagamentoId);
             return new MercadoPagoPaymentStatus(MercadoPagoPaymentOutcome.NotFound, "error");
         }
 
@@ -135,4 +133,14 @@ internal sealed class MercadoPagoPreferenceClient(
 
     private sealed record MpPaymentResult(
         [property: JsonPropertyName("status")] string Status);
+
+    [LoggerMessage(
+        Level = LogLevel.Error,
+        Message = "Falha ao criar preference no Mercado Pago para PagamentoId={PagamentoId}.")]
+    private static partial void LogFalhaCriarPreference(ILogger logger, Exception exception, Guid pagamentoId);
+
+    [LoggerMessage(
+        Level = LogLevel.Warning,
+        Message = "Falha ao consultar status no Mercado Pago para PagamentoId={PagamentoId}.")]
+    private static partial void LogFalhaConsultarStatus(ILogger logger, Exception exception, Guid pagamentoId);
 }

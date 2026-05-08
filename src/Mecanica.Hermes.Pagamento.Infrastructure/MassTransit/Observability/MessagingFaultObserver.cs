@@ -13,7 +13,7 @@ namespace Mecanica.Hermes.Pagamento.Infrastructure.MassTransit.Observability;
 ///         retries intermediários.
 ///     </para>
 /// </summary>
-internal sealed class MessagingFaultObserver(
+internal sealed partial class MessagingFaultObserver(
     DlqMetrics metrics,
     ILogger<MessagingFaultObserver> logger) : IConsumeObserver
 {
@@ -34,11 +34,19 @@ internal sealed class MessagingFaultObserver(
 
         metrics.ConsumeFault(messageType, exceptionType);
 
-        logger.LogError(exception,
-            "Consumer falhou em definitivo para {MessageType} (MessageId={MessageId}). " +
-            "Mensagem será movida para _error (DLQ). Exception={ExceptionType}.",
-            messageType, context.MessageId, exceptionType);
+        LogConsumerFault(logger, exception, messageType, context.MessageId, exceptionType);
 
         return Task.CompletedTask;
     }
+
+    [LoggerMessage(
+        Level = LogLevel.Error,
+        Message = "Consumer falhou em definitivo para {MessageType} (MessageId={MessageId}). "
+                  + "Mensagem será movida para _error (DLQ). Exception={ExceptionType}.")]
+    private static partial void LogConsumerFault(
+        ILogger logger,
+        Exception exception,
+        string messageType,
+        Guid? messageId,
+        string exceptionType);
 }

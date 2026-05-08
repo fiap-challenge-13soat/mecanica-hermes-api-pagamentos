@@ -15,7 +15,7 @@ namespace Mecanica.Hermes.Pagamento.Infrastructure.MassTransit.Adapters;
 ///     <see cref="BrokerUnavailableException" /> que o
 ///     <c>GlobalExceptionHandlerMiddleware</c> mapeia para HTTP 503.
 /// </summary>
-internal sealed class MassTransitMessagePublisher(
+internal sealed partial class MassTransitMessagePublisher(
     IPublishEndpoint publishEndpoint,
     ILogger<MassTransitMessagePublisher> logger)
     : IAsyncMessagePublisher
@@ -41,13 +41,17 @@ internal sealed class MassTransitMessagePublisher(
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            logger.LogError(ex,
-                "Falha ao publicar mensagem {MessageType} após todas as tentativas. O broker pode estar indisponível.",
-                message.GetType().Name);
+            LogPublishFailure(logger, ex, message.GetType().Name);
             throw new BrokerUnavailableException(
                 $"Não foi possível enfileirar a mensagem {message.GetType().Name}. Tente novamente em instantes.", ex);
         }
     }
+
+    [LoggerMessage(
+        Level = LogLevel.Error,
+        Message = "Falha ao publicar mensagem {MessageType} após todas as tentativas. "
+                  + "O broker pode estar indisponível.")]
+    private static partial void LogPublishFailure(ILogger logger, Exception exception, string messageType);
 }
 
 [ExcludeFromCodeCoverage(Justification = "Exception sem lógica — apenas transporte de mensagem.")]

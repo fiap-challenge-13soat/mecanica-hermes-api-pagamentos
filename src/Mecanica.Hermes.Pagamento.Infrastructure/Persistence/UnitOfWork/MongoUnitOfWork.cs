@@ -1,10 +1,10 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
-using Mecanica.Hermes.Shared.Core.Persistence;
 using Mecanica.Hermes.Pagamento.Domain.Common.Abstractions;
-using Mecanica.Hermes.Shared.Core.Domain;
 using Mecanica.Hermes.Pagamento.Infrastructure.Persistence.Entities;
+using Mecanica.Hermes.Shared.Core.Domain;
+using Mecanica.Hermes.Shared.Core.Persistence;
 using Microsoft.Extensions.Logging;
 
 namespace Mecanica.Hermes.Pagamento.Infrastructure.Persistence.UnitOfWork;
@@ -16,7 +16,7 @@ namespace Mecanica.Hermes.Pagamento.Infrastructure.Persistence.UnitOfWork;
 ///     despacha cada documento via <see cref="IDomainEventDispatcher" />.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "UoW Mongo com transação + outbox — coberto por testes de integração com Testcontainers.")]
-internal sealed class MongoUnitOfWork(
+internal sealed partial class MongoUnitOfWork(
     MongoDbContext db,
     TimeProvider timeProvider,
     ILogger<MongoUnitOfWork> logger) : IUnitOfWork
@@ -64,9 +64,7 @@ internal sealed class MongoUnitOfWork(
             }
             catch (Exception ex)
             {
-                logger.LogError(ex,
-                    "Falha ao serializar Domain Event {EventType} para Outbox. Evento NÃO será despachado.",
-                    evt.GetType().Name);
+                LogSerializationFailure(logger, ex, evt.GetType().Name);
             }
 
         if (docs.Count == 0)
@@ -75,4 +73,9 @@ internal sealed class MongoUnitOfWork(
         await db.Outbox.InsertManyAsync(docs, cancellationToken: cancellationToken);
         return docs.Count;
     }
+
+    [LoggerMessage(
+        Level = LogLevel.Error,
+        Message = "Falha ao serializar Domain Event {EventType} para Outbox. Evento NÃO será despachado.")]
+    private static partial void LogSerializationFailure(ILogger logger, Exception exception, string eventType);
 }

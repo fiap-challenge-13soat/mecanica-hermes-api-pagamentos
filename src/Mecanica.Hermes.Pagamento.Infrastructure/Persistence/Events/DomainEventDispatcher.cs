@@ -9,7 +9,7 @@ namespace Mecanica.Hermes.Pagamento.Infrastructure.Persistence.Events;
 ///     Despacha cada Domain Event como uma <see cref="DomainEventNotification{T}" /> via MediatR.
 ///     Falhas em handlers são capturadas, logadas e a iteração continua para isolar eventos.
 /// </summary>
-internal sealed class DomainEventDispatcher(
+internal sealed partial class DomainEventDispatcher(
     IPublisher publisher,
     ILogger<DomainEventDispatcher> logger) : IDomainEventDispatcher
 {
@@ -24,10 +24,12 @@ internal sealed class DomainEventDispatcher(
             }
             catch (Exception ex)
             {
-                logger.LogError(
-                    ex,
-                    "Falha ao despachar Domain Event {EventType}. Continuando com os demais.",
-                    e.GetType().Name);
+                LogDispatchFailure(logger, ex, e.GetType().Name);
             }
     }
+
+    [LoggerMessage(
+        Level = LogLevel.Error,
+        Message = "Falha ao despachar Domain Event {EventType}. Continuando com os demais.")]
+    private static partial void LogDispatchFailure(ILogger logger, Exception exception, string eventType);
 }

@@ -1,10 +1,10 @@
 using System.Diagnostics.CodeAnalysis;
+using MassTransit;
 using Mecanica.Hermes.Pagamento.Api.Endpoints.Webhooks.Contracts;
 using Mecanica.Hermes.Pagamento.Application.Pagamentos.Constants;
 using Mecanica.Hermes.Pagamento.Application.Pagamentos.Messages.Requests;
 using Mecanica.Hermes.Pagamento.Application.Pagamentos.Ports;
 using Mecanica.Hermes.Pagamento.Infrastructure.MercadoPago;
-using MassTransit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging;
 namespace Mecanica.Hermes.Pagamento.Api.Endpoints.Webhooks;
 
 [ExcludeFromCodeCoverage(Justification = "Definição de rota minimal API + handler — coberta por testes de integração com WireMock.")]
-public static class MercadoPagoWebhookRoute
+public static partial class MercadoPagoWebhookRoute
 {
     public static void MapMercadoPagoWebhook(this IEndpointRouteBuilder app)
     {
@@ -49,7 +49,7 @@ public static class MercadoPagoWebhookRoute
             metrics.ErroRegistrado(
                 PagamentoMetricKeys.Operations.ConfirmarWebhook,
                 PagamentoMetricKeys.ErrorTypes.WebhookSignatureInvalid);
-            logger.LogWarning("Webhook do Mercado Pago recebido com assinatura inválida.");
+            LogAssinaturaInvalida(logger);
             return Results.Unauthorized();
         }
 
@@ -59,7 +59,7 @@ public static class MercadoPagoWebhookRoute
             // external_reference (chamada extra ao MP). Para simplificar nesse scaffold, aceitamos
             // que `data.id` é o próprio PagamentoId — o cliente envia preference com
             // external_reference = PagamentoId, e o webhook deve carregar esse identificador.
-            logger.LogWarning("Webhook do Mercado Pago recebeu data.id não-Guid: {DataId}", dataId);
+            LogDataIdNaoGuid(logger, dataId);
             return Results.BadRequest();
         }
 
@@ -83,4 +83,10 @@ public static class MercadoPagoWebhookRoute
 
         return Results.Accepted();
     }
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Webhook do Mercado Pago recebido com assinatura inválida.")]
+    private static partial void LogAssinaturaInvalida(ILogger logger);
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Webhook do Mercado Pago recebeu data.id não-Guid: {DataId}")]
+    private static partial void LogDataIdNaoGuid(ILogger logger, string dataId);
 }

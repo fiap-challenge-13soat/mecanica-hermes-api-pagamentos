@@ -12,12 +12,12 @@ namespace Mecanica.Hermes.Pagamento.Infrastructure.Persistence;
 ///     pré-existentes com a mesma definição.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "Hosted service de bootstrap de índices Mongo — coberto por testes de integração.")]
-internal sealed class MongoIndexInitializer(MongoDbContext db, ILogger<MongoIndexInitializer> logger)
+internal sealed partial class MongoIndexInitializer(MongoDbContext db, ILogger<MongoIndexInitializer> logger)
     : IHostedService
 {
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        logger.LogInformation("Garantindo índices das coleções MongoDB...");
+        LogGarantindoIndices(logger);
 
         // pagamentos: índice em OrdemDeServicoId para consulta por OS
         await db.Pagamentos.Indexes.CreateOneAsync(
@@ -49,11 +49,17 @@ internal sealed class MongoIndexInitializer(MongoDbContext db, ILogger<MongoInde
                 new CreateIndexOptions { Name = "ix_webhook_received_ttl", ExpireAfter = TimeSpan.FromDays(90) }),
             cancellationToken: cancellationToken);
 
-        logger.LogInformation("Índices das coleções MongoDB confirmados.");
+        LogIndicesConfirmados(logger);
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
     {
         return Task.CompletedTask;
     }
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Garantindo índices das coleções MongoDB...")]
+    private static partial void LogGarantindoIndices(ILogger logger);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Índices das coleções MongoDB confirmados.")]
+    private static partial void LogIndicesConfirmados(ILogger logger);
 }

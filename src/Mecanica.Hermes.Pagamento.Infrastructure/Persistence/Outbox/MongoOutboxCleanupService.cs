@@ -1,4 +1,3 @@
-#pragma warning disable CA1873 // Log arguments are simple property/variable accesses — not expensive
 using System.Diagnostics.CodeAnalysis;
 using Mecanica.Hermes.Pagamento.Infrastructure.Persistence.Entities;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,7 +13,7 @@ namespace Mecanica.Hermes.Pagamento.Infrastructure.Persistence.Outbox;
 ///     data de processamento é anterior a <see cref="OutboxOptions.ProcessedRetention" />.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "BackgroundService de limpeza Mongo — coberto por testes de integração com Testcontainers.")]
-internal sealed class MongoOutboxCleanupService(
+internal sealed partial class MongoOutboxCleanupService(
     IServiceScopeFactory scopeFactory,
     IOptions<OutboxOptions> options,
     ILogger<MongoOutboxCleanupService> logger) : BackgroundService
@@ -24,7 +23,7 @@ internal sealed class MongoOutboxCleanupService(
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         var cleanupInterval = _options.PollInterval * 10;
-        logger.LogInformation("MongoOutboxCleanupService iniciado. Cleanup a cada {Interval}.", cleanupInterval);
+        LogIniciado(logger, cleanupInterval);
 
         while (!stoppingToken.IsCancellationRequested)
             try
@@ -38,7 +37,7 @@ internal sealed class MongoOutboxCleanupService(
             }
             catch (Exception ex) when (!stoppingToken.IsCancellationRequested)
             {
-                logger.LogError(ex, "Falha ao executar cleanup do Outbox.");
+                LogFalhaCleanup(logger, ex);
             }
     }
 
@@ -56,8 +55,19 @@ internal sealed class MongoOutboxCleanupService(
         var result = await db.Outbox.DeleteManyAsync(filter, ct);
 
         if (result.DeletedCount > 0)
-            logger.LogInformation(
-                "MongoOutboxCleanupService removeu {Count} documentos processados anteriores a {Cutoff:O}.",
-                result.DeletedCount, cutoff);
+            LogDocumentosRemovidos(logger, result.DeletedCount, cutoff);
     }
+
+    [LoggerMessage(
+        Level = LogLevel.Information,
+        Message = "MongoOutboxCleanupService iniciado. Cleanup a cada {Interval}.")]
+    private static partial void LogIniciado(ILogger logger, TimeSpan interval);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Falha ao executar cleanup do Outbox.")]
+    private static partial void LogFalhaCleanup(ILogger logger, Exception exception);
+
+    [LoggerMessage(
+        Level = LogLevel.Information,
+        Message = "MongoOutboxCleanupService removeu {Count} documentos processados anteriores a {Cutoff:O}.")]
+    private static partial void LogDocumentosRemovidos(ILogger logger, long count, DateTime cutoff);
 }

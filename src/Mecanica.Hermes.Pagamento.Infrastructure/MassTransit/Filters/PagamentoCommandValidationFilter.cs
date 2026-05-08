@@ -6,7 +6,8 @@ using Microsoft.Extensions.Logging;
 namespace Mecanica.Hermes.Pagamento.Infrastructure.MassTransit.Filters;
 
 [ExcludeFromCodeCoverage(Justification = "Filtro MassTransit consume pipeline — exercitado pelos consumers em integração.")]
-internal sealed class PagamentoCommandValidationFilter<T>(ILogger<PagamentoCommandValidationFilter<T>> logger)
+internal sealed partial class PagamentoCommandValidationFilter<T>(
+    ILogger<PagamentoCommandValidationFilter<T>> logger)
     : IFilter<ConsumeContext<T>>
     where T : class, IPagamentoExecuteCommand
 {
@@ -14,9 +15,7 @@ internal sealed class PagamentoCommandValidationFilter<T>(ILogger<PagamentoComma
     {
         if (context.Message.PagamentoId == Guid.Empty)
         {
-            logger.LogError(
-                "Mensagem {MessageType} recebida com PagamentoId vazio. Mensagem descartada.",
-                typeof(T).Name);
+            LogPagamentoIdVazio(logger, typeof(T).Name);
             return;
         }
 
@@ -27,4 +26,9 @@ internal sealed class PagamentoCommandValidationFilter<T>(ILogger<PagamentoComma
     {
         context.CreateFilterScope("pagamentoCommandValidation");
     }
+
+    [LoggerMessage(
+        Level = LogLevel.Error,
+        Message = "Mensagem {MessageType} recebida com PagamentoId vazio. Mensagem descartada.")]
+    private static partial void LogPagamentoIdVazio(ILogger logger, string messageType);
 }

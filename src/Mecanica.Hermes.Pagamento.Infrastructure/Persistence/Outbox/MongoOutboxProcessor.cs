@@ -1,12 +1,11 @@
-#pragma warning disable CA1873 // Log arguments are simple property accesses — not expensive
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Mecanica.Hermes.Pagamento.Domain.Common.Abstractions;
 using Mecanica.Hermes.Pagamento.Infrastructure.Observability;
+using Mecanica.Hermes.Pagamento.Infrastructure.Persistence.Entities;
 using Mecanica.Hermes.Shared.Core.Domain;
 using Mecanica.Hermes.Shared.Observability;
-using Mecanica.Hermes.Pagamento.Infrastructure.Persistence.Entities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -37,7 +36,7 @@ namespace Mecanica.Hermes.Pagamento.Infrastructure.Persistence.Outbox;
 ///     </list>
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "BackgroundService que faz I/O Mongo — coberto por testes de integração com Testcontainers.")]
-internal sealed class MongoOutboxProcessor(
+internal sealed partial class MongoOutboxProcessor(
     IServiceScopeFactory scopeFactory,
     OutboxHealthMetrics metrics,
     IOptions<OutboxOptions> options,
@@ -49,9 +48,7 @@ internal sealed class MongoOutboxProcessor(
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        logger.LogInformation(
-            "MongoOutboxProcessor iniciado (instance={Instance}). Polling a cada {Interval}.",
-            _instanceId, _options.PollInterval);
+        LogIniciado(logger, _instanceId, _options.PollInterval);
 
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -61,9 +58,7 @@ internal sealed class MongoOutboxProcessor(
             }
             catch (Exception ex) when (!stoppingToken.IsCancellationRequested)
             {
-                logger.LogError(ex,
-                    "Falha ao processar lote do Outbox. Próxima tentativa em {Interval}.",
-                    _options.PollInterval);
+                LogFalhaLote(logger, ex, _options.PollInterval);
             }
 
             try
@@ -76,7 +71,7 @@ internal sealed class MongoOutboxProcessor(
             }
         }
 
-        logger.LogInformation("MongoOutboxProcessor parado.");
+        LogParado(logger);
     }
 
     private async Task ProcessBatchAsync(CancellationToken ct)
@@ -136,7 +131,7 @@ internal sealed class MongoOutboxProcessor(
                 if (evtType is null)
                 {
                     var err = $"Tipo '{doc.Type}' não pôde ser resolvido.";
-                    logger.LogWarning("OutboxDocument {Id}: {Error}", doc.Id, err);
+                    LogDocumentoInvalido(logger, doc.Id, err);
                     await MarkFailedAsync(db, doc, err, ct);
                     RecordFailure(doc, activity);
                     continue;
@@ -146,7 +141,7 @@ internal sealed class MongoOutboxProcessor(
                 if (domainEvent is null)
                 {
                     const string err = "Payload deserializado é null ou não implementa IDomainEvent.";
-                    logger.LogWarning("OutboxDocument {Id}: {Error}", doc.Id, err);
+                    LogDocumentoInvalido(logger, doc.Id, err);
                     await MarkFailedAsync(db, doc, err, ct);
                     RecordFailure(doc, activity);
                     continue;
@@ -159,8 +154,7 @@ internal sealed class MongoOutboxProcessor(
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Falha ao despachar OutboxDocument {Id} ({Type}). Retry={Retry}",
-                    doc.Id, doc.Type, doc.RetryCount + 1);
+                LogFalhaDispatch(logger, ex, doc.Id, doc.Type, doc.RetryCount + 1);
                 await MarkFailedAsync(db, doc, ex.Message, ct);
                 RecordFailure(doc, activity);
             }
@@ -205,10 +199,7 @@ internal sealed class MongoOutboxProcessor(
         if (doc.Status == OutboxDocument.StatusDeadLettered)
         {
             metrics.MessageDeadLettered();
-            logger.LogCritical(
-                "OutboxDocument {Id} ({Type}) atingiu o limite de {MaxRetries} tentativas e foi movido " +
-                "para Dead Letter.",
-                doc.Id, doc.Type, _options.MaxRetries);
+            LogDeadLetter(logger, doc.Id, doc.Type, _options.MaxRetries);
         }
         else
         {
@@ -241,4 +232,36 @@ internal sealed class MongoOutboxProcessor(
                 return attr?.Name == typeName;
             });
     }
+
+    [LoggerMessage(
+        Level = LogLevel.Information,
+        Message = "MongoOutboxProcessor iniciado (instance={Instance}). Polling a cada {Interval}.")]
+    private static partial void LogIniciado(ILogger logger, string instance, TimeSpan interval);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "MongoOutboxProcessor parado.")]
+    private static partial void LogParado(ILogger logger);
+
+    [LoggerMessage(
+        Level = LogLevel.Error,
+        Message = "Falha ao processar lote do Outbox. Próxima tentativa em {Interval}.")]
+    private static partial void LogFalhaLote(ILogger logger, Exception exception, TimeSpan interval);
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "OutboxDocument {Id}: {Error}")]
+    private static partial void LogDocumentoInvalido(ILogger logger, Guid id, string error);
+
+    [LoggerMessage(
+        Level = LogLevel.Error,
+        Message = "Falha ao despachar OutboxDocument {Id} ({Type}). Retry={Retry}")]
+    private static partial void LogFalhaDispatch(
+        ILogger logger,
+        Exception exception,
+        Guid id,
+        string type,
+        int retry);
+
+    [LoggerMessage(
+        Level = LogLevel.Critical,
+        Message = "OutboxDocument {Id} ({Type}) atingiu o limite de {MaxRetries} tentativas e foi movido "
+                  + "para Dead Letter.")]
+    private static partial void LogDeadLetter(ILogger logger, Guid id, string type, int maxRetries);
 }
