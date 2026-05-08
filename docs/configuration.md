@@ -62,6 +62,12 @@ Todas as variáveis usam **double-underscore** (`__`) para mapeamento ASP.NET Co
 | --- | --- | --- |
 | `CADASTROS_API__BASE_URL` | `http://localhost:5000` | URL base da API de Cadastros. Usada pelo `ClienteApiClient` para consultar dados do cliente ao criar pagamento. |
 | `AUTH__SERVICO_SCOPE` | `servico-scope` | Scope JWT incluído no token M2M para autenticar em Cadastros. O endpoint `GET /api/clientes/{id}` aceita este scope. |
+| `M2M__TOKEN_ENDPOINT` | _(vazio)_ | OAuth 2.0 token endpoint do IDP (ex.: `https://{userpool}.auth.{region}.amazoncognito.com/oauth2/token`). **Quando vazio**, o `M2MAuthorizationDelegatingHandler` não é encadeado — adequado para Development/Testing onde o `DevelopmentAuthenticationMiddleware` da Cadastros bypassa auth. **Em produção é obrigatório** — sem isso, Cadastros responde 401. |
+| `M2M__CLIENT_ID` | _(vazio)_ | Client ID da app M2M registrada no IDP. Obrigatório quando `M2M__TOKEN_ENDPOINT` está definido. |
+| `M2M__CLIENT_SECRET` | _(vazio)_ | Client Secret. **Não commitar** — vir de Vault/Secrets Manager. |
+| `M2M__SCOPE` | _(vazio)_ | Scope solicitado no Client Credentials grant (ex.: `servico-scope` mapeando para a policy `AllowServicoOrAdminScope` em Cadastros conforme ADR-006). |
+
+> **Comportamento do handler:** O `ClientCredentialsTokenProvider` cacheia o token em memória até `expires_in - 60s` (margem configurável via código). Concorrência entre requests é serializada por `SemaphoreSlim` — apenas uma chamada de refresh ocorre mesmo sob carga.
 
 ## Auth
 

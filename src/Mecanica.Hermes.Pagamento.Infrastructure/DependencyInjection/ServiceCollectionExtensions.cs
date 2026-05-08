@@ -8,6 +8,7 @@ using Mecanica.Hermes.Shared.Application.Messaging;
 using Mecanica.Hermes.Pagamento.Application.Pagamentos.Ports;
 using Mecanica.Hermes.Pagamento.Domain;
 using Mecanica.Hermes.Pagamento.Infrastructure.HttpClients;
+using Mecanica.Hermes.Pagamento.Infrastructure.HttpClients.M2M;
 using Mecanica.Hermes.Pagamento.Infrastructure.MassTransit.Adapters;
 using Mecanica.Hermes.Pagamento.Infrastructure.MassTransit.Configurations;
 using Mecanica.Hermes.Pagamento.Infrastructure.MercadoPago;
@@ -69,19 +70,47 @@ public static class ServiceCollectionExtensions
                 options.CircuitBreaker.MinimumThroughput = 10;
             });
 
+        // M2M auth: lê configuração de M2M__* (token endpoint, client id/secret, scope).
+        // Quando habilitado, encadeia um DelegatingHandler que injeta `Authorization: Bearer <jwt>`
+        // em toda chamada outgoing para Cadastros. Em Development/Testing as env vars ficam
+        // vazias e o handler não é encadeado — a Cadastros bypassa via DevAuth nesses cenários.
+        services.Configure<M2MTokenProviderOptions>(opt =>
+        {
+            opt.TokenEndpoint = Environment.GetEnvironmentVariable(VariableNames.M2MTokenEndpoint) ?? string.Empty;
+            opt.ClientId = Environment.GetEnvironmentVariable(VariableNames.M2MClientId) ?? string.Empty;
+            opt.ClientSecret = Environment.GetEnvironmentVariable(VariableNames.M2MClientSecret) ?? string.Empty;
+            opt.Scope = Environment.GetEnvironmentVariable(VariableNames.M2MScope) ?? string.Empty;
+        });
+
+        var m2mEnabled = !string.IsNullOrWhiteSpace(
+            Environment.GetEnvironmentVariable(VariableNames.M2MTokenEndpoint));
+
+        if (m2mEnabled)
+        {
+            services.AddSingleton(TimeProvider.System);
+            services.AddHttpClient<IM2MTokenProvider, ClientCredentialsTokenProvider>();
+            services.AddTransient<M2MAuthorizationDelegatingHandler>();
+        }
+
         var cadastrosBaseUrl = Environment.GetEnvironmentVariable(VariableNames.CadastrosApiBaseUrl)
                                ?? "http://localhost:5000/";
-        services.AddHttpClient<IClienteApiClient, ClienteApiClient>(client =>
+        var cadastrosClientBuilder = services.AddHttpClient<IClienteApiClient, ClienteApiClient>(client =>
             {
                 client.BaseAddress = new Uri(cadastrosBaseUrl.TrimEnd('/') + "/");
-            })
-            .AddStandardResilienceHandler(options =>
-            {
-                options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(10);
-                options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(30);
-                options.Retry.MaxRetryAttempts = 2;
-                options.CircuitBreaker.MinimumThroughput = 5;
             });
+
+        // O DelegatingHandler precisa rodar ANTES do StandardResilienceHandler para que
+        // 401 cause refresh + retry com token novo (em vez de retry com token expirado).
+        if (m2mEnabled)
+            cadastrosClientBuilder.AddHttpMessageHandler<M2MAuthorizationDelegatingHandler>();
+
+        cadastrosClientBuilder.AddStandardResilienceHandler(options =>
+        {
+            options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(10);
+            options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(30);
+            options.Retry.MaxRetryAttempts = 2;
+            options.CircuitBreaker.MinimumThroughput = 5;
+        });
 
         services.AddMediatR(cfg =>
         {

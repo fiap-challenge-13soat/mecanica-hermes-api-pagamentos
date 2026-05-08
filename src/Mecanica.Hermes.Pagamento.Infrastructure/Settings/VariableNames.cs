@@ -50,6 +50,12 @@ internal static class VariableNames
     // Cadastros API (M2M)
     public const string CadastrosApiBaseUrl = "CADASTROS_API__BASE_URL";
 
+    // M2M (Cognito Client Credentials para autenticar chamadas a Cadastros)
+    public const string M2MTokenEndpoint = "M2M__TOKEN_ENDPOINT";
+    public const string M2MClientId = "M2M__CLIENT_ID";
+    public const string M2MClientSecret = "M2M__CLIENT_SECRET";
+    public const string M2MScope = "M2M__SCOPE";
+
     // Outbox
     public const string OutboxPollInterval = "OUTBOX__POLL_INTERVAL";
     public const string OutboxBatchSize = "OUTBOX__BATCH_SIZE";
