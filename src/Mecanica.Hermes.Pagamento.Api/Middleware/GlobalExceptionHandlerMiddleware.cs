@@ -1,9 +1,9 @@
 using System.Net;
 using System.Text.Json;
 using Mecanica.Hermes.Pagamento.Api.Presenter;
+using Mecanica.Hermes.Pagamento.Infrastructure.MassTransit.Adapters;
 using Mecanica.Hermes.Shared.AspNetCore.Presenter;
 using Mecanica.Hermes.Shared.Core;
-using Mecanica.Hermes.Pagamento.Infrastructure.MassTransit.Adapters;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;

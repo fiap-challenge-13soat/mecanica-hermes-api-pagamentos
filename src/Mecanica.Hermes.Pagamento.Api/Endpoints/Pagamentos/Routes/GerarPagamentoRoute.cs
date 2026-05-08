@@ -1,12 +1,12 @@
-using Mecanica.Hermes.Shared.AspNetCore.Endpoints;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using Mecanica.Hermes.Pagamento.Api.Endpoints.Pagamentos.Contracts;
-using Mecanica.Hermes.Shared.AspNetCore.Filters;
 using Mecanica.Hermes.Pagamento.Api.Presenter;
-using Mecanica.Hermes.Shared.AspNetCore.Presenter;
 using Mecanica.Hermes.Pagamento.Application.Pagamentos.Commands.GerarPagamento;
 using Mecanica.Hermes.Pagamento.Infrastructure.Settings;
+using Mecanica.Hermes.Shared.AspNetCore.Endpoints;
+using Mecanica.Hermes.Shared.AspNetCore.Filters;
+using Mecanica.Hermes.Shared.AspNetCore.Presenter;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;

@@ -1,8 +1,8 @@
 using FluentAssertions;
 using Mecanica.Hermes.Pagamento.Domain.Common.Abstractions;
-using Mecanica.Hermes.Shared.Core.Domain;
 using Mecanica.Hermes.Pagamento.Domain.Pagamentos.Enums;
 using Mecanica.Hermes.Pagamento.Domain.Pagamentos.Status;
+using Mecanica.Hermes.Shared.Core.Domain;
 using Xunit;
 
 namespace Mecanica.Hermes.Pagamento.Domain.Tests.Pagamentos.Status;

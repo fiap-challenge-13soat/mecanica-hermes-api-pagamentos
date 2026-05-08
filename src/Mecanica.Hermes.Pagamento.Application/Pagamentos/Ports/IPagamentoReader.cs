@@ -1,5 +1,5 @@
-using Mecanica.Hermes.Shared.Core.Pagination;
 using Mecanica.Hermes.Pagamento.Domain.Pagamentos.Enums;
+using Mecanica.Hermes.Shared.Core.Pagination;
 
 namespace Mecanica.Hermes.Pagamento.Application.Pagamentos.Ports;
 

@@ -1,8 +1,8 @@
 using System.Reflection;
 using FluentAssertions;
 using Mecanica.Hermes.Pagamento.Domain.Common.Abstractions;
-using Mecanica.Hermes.Shared.Core.Domain;
 using Mecanica.Hermes.Pagamento.Domain.Pagamentos.Events;
+using Mecanica.Hermes.Shared.Core.Domain;
 using Xunit;
 
 namespace Mecanica.Hermes.Pagamento.Domain.Tests.Common.Abstractions;

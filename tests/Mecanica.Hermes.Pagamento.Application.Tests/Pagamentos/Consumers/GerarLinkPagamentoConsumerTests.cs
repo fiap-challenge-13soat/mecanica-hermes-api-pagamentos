@@ -1,12 +1,12 @@
 using FluentAssertions;
 using MassTransit;
 using MassTransit.Testing;
-using Mecanica.Hermes.Shared.Core.Persistence;
+using Mecanica.Hermes.Contracts.Integration;
 using Mecanica.Hermes.Pagamento.Application.Pagamentos.Consumers;
 using Mecanica.Hermes.Pagamento.Application.Pagamentos.Messages.Commands;
 using Mecanica.Hermes.Pagamento.Application.Pagamentos.Messages.Events;
-using Mecanica.Hermes.Contracts.Integration;
 using Mecanica.Hermes.Pagamento.Application.Pagamentos.Ports;
+using Mecanica.Hermes.Shared.Core.Persistence;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;

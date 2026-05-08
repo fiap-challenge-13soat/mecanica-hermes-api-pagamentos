@@ -1,8 +1,8 @@
 using Mecanica.Hermes.Pagamento.Domain.Common.Abstractions;
+using Mecanica.Hermes.Pagamento.Domain.Pagamentos.Enums;
 using Mecanica.Hermes.Shared.Core.Domain;
 using Mecanica.Hermes.Shared.Core.Domain;
 using Mecanica.Hermes.Shared.Core.Results;
-using Mecanica.Hermes.Pagamento.Domain.Pagamentos.Enums;
 
 namespace Mecanica.Hermes.Pagamento.Domain.Pagamentos.Abstractions;
 

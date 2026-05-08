@@ -1,7 +1,7 @@
 using FluentAssertions;
 using Mecanica.Hermes.Pagamento.Domain.Common.Abstractions;
-using Mecanica.Hermes.Shared.Core.Domain;
 using Mecanica.Hermes.Pagamento.Infrastructure.Persistence.Events;
+using Mecanica.Hermes.Shared.Core.Domain;
 using Xunit;
 
 namespace Mecanica.Hermes.Pagamento.Infrastructure.Tests.Persistence.Events;

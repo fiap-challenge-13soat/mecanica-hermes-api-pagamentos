@@ -1,10 +1,10 @@
 using Mecanica.Hermes.Pagamento.Domain.Pagamentos;
 using Mecanica.Hermes.Pagamento.Domain.Pagamentos.Abstractions;
-using PagamentoAggregate = Mecanica.Hermes.Pagamento.Domain.Pagamentos.Pagamento;
 using Mecanica.Hermes.Pagamento.Domain.Pagamentos.Enums;
 using Mecanica.Hermes.Pagamento.Domain.Pagamentos.Status;
 using Mecanica.Hermes.Pagamento.Domain.Pagamentos.ValueObjects;
 using Mecanica.Hermes.Pagamento.Infrastructure.Persistence.Entities;
+using PagamentoAggregate = Mecanica.Hermes.Pagamento.Domain.Pagamentos.Pagamento;
 
 namespace Mecanica.Hermes.Pagamento.Infrastructure.Persistence.Mappings;
 

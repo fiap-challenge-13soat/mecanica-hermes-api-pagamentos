@@ -1,11 +1,11 @@
 using System.Diagnostics.CodeAnalysis;
-using Mecanica.Hermes.Shared.Core.Persistence;
 using Mecanica.Hermes.Pagamento.Domain.Common.Abstractions;
-using Mecanica.Hermes.Shared.Core.Domain;
 using Mecanica.Hermes.Pagamento.Infrastructure.Persistence.Events;
 using Mecanica.Hermes.Pagamento.Infrastructure.Persistence.Outbox;
 using Mecanica.Hermes.Pagamento.Infrastructure.Persistence.UnitOfWork;
 using Mecanica.Hermes.Pagamento.Infrastructure.Settings;
+using Mecanica.Hermes.Shared.Core.Domain;
+using Mecanica.Hermes.Shared.Core.Persistence;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Conventions;

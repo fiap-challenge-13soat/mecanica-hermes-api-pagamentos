@@ -1,11 +1,11 @@
 using Mecanica.Hermes.Pagamento.Domain.Common.Abstractions;
-using Mecanica.Hermes.Shared.Core.Domain;
-using Mecanica.Hermes.Shared.Core.Results;
 using Mecanica.Hermes.Pagamento.Domain.Pagamentos.Abstractions;
 using Mecanica.Hermes.Pagamento.Domain.Pagamentos.Enums;
 using Mecanica.Hermes.Pagamento.Domain.Pagamentos.Events;
 using Mecanica.Hermes.Pagamento.Domain.Pagamentos.Status;
 using Mecanica.Hermes.Pagamento.Domain.Pagamentos.ValueObjects;
+using Mecanica.Hermes.Shared.Core.Domain;
+using Mecanica.Hermes.Shared.Core.Results;
 
 namespace Mecanica.Hermes.Pagamento.Domain.Pagamentos;
 

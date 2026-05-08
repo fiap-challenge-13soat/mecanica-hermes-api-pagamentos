@@ -1,11 +1,11 @@
 using System.Diagnostics.CodeAnalysis;
-using Mecanica.Hermes.Shared.Core.Persistence;
-using Mecanica.Hermes.Shared.Core.Pagination;
-using Mecanica.Hermes.Shared.Core.Persistence;
 using Mecanica.Hermes.Pagamento.Application.Pagamentos.Ports;
 using Mecanica.Hermes.Pagamento.Domain.Pagamentos.Enums;
 using Mecanica.Hermes.Pagamento.Infrastructure.Persistence.Entities;
 using Mecanica.Hermes.Pagamento.Infrastructure.Persistence.Mappings;
+using Mecanica.Hermes.Shared.Core.Pagination;
+using Mecanica.Hermes.Shared.Core.Persistence;
+using Mecanica.Hermes.Shared.Core.Persistence;
 using MongoDB.Driver;
 
 namespace Mecanica.Hermes.Pagamento.Infrastructure.Persistence.Repositories;
