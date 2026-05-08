@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using MassTransit;
 using Mecanica.Hermes.Pagamento.Application.Pagamentos.Messages.Commands;
 using Mecanica.Hermes.Pagamento.Infrastructure.MassTransit.Filters;
+using Mecanica.Hermes.Pagamento.Infrastructure.MassTransit.Observability;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -50,5 +51,10 @@ internal static class BusFactoryConfiguratorExtensions
 
         configurator.UseConsumeFilter(typeof(PagamentoCommandValidationFilter<>), registration,
             x => x.Include(type => typeof(IPagamentoExecuteCommand).IsAssignableFrom(type)));
+
+        // DLQ observability: hooka o ConsumeFault depois que retry+redelivery esgotam.
+        // Emite métrica `messaging.consume_faults` e log estruturado, permitindo alarmar quando
+        // mensagens vão em massa para o _error queue.
+        configurator.ConnectConsumeObserver(registration.GetRequiredService<MessagingFaultObserver>());
     }
 }

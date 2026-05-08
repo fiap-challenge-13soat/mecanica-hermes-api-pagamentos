@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using MassTransit;
+using Mecanica.Hermes.Pagamento.Infrastructure.MassTransit.Observability;
 using Mecanica.Hermes.Pagamento.Infrastructure.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -13,6 +14,12 @@ internal static class ServiceCollectionExtensions
     public static void ConfigureMassTransit(this IServiceCollection services)
     {
         services.AddMassTransitOptions();
+
+        // DLQ observability: o observer captura `ConsumeFault` (após retries+redelivery esgotados)
+        // e emite métrica `messaging.consume_faults` + log estruturado.
+        services.AddSingleton<DlqMetrics>();
+        services.AddSingleton<MessagingFaultObserver>();
+
         _ = Enum.TryParse<TransportService>(
             Environment.GetEnvironmentVariable(VariableNames.MassTransitTransportService), out var transportService);
 

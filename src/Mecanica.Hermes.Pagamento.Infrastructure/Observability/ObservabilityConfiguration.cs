@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using Mecanica.Hermes.Pagamento.Infrastructure.MassTransit.Observability;
 using Mecanica.Hermes.Pagamento.Infrastructure.Persistence.Outbox;
 using Mecanica.Hermes.Shared.Observability;
 using Microsoft.Extensions.DependencyInjection;
@@ -47,6 +48,7 @@ internal static class ObservabilityConfiguration
                 metrics
                     .AddMeter(PagamentoMetrics.MeterName)
                     .AddMeter(OutboxHealthMetrics.MeterName)
+                    .AddMeter(DlqMetrics.MeterName)
                     .AddMeter("MassTransit")
                     .AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
