@@ -34,7 +34,7 @@ jobs:
       - name: Restaurar pacotes
         env:
           GITHUB_USERNAME: ${{ github.actor }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
         run: dotnet restore Mecanica.Hermes.Pagamento.sln
 
       - name: Verificar whitespace

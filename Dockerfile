@@ -4,13 +4,12 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
-# GitHub Packages credentials — used by nuget.config para baixar
-# Mecanica.Hermes.Shared.* da org fiap-challenge-13soat. Passados como build-args
-# pelo workflow Docker (`--build-arg GITHUB_USERNAME=... --build-arg GITHUB_TOKEN=...`).
+# GitHub Packages credentials — usadas pelo nuget.config para baixar
+# Mecanica.Hermes.Shared.* da org fiap-challenge-13soat.
+# GITHUB_USERNAME chega como build-arg (não é segredo).
+# GITHUB_TOKEN chega via BuildKit secret (id=github_token) para não
+# ser gravado em nenhuma camada da imagem nem no cache do buildx.
 ARG GITHUB_USERNAME
-ARG GITHUB_TOKEN
-ENV GITHUB_USERNAME=${GITHUB_USERNAME} \
-    GITHUB_TOKEN=${GITHUB_TOKEN}
 
 # Copy solution-level config first — these change rarely so the restore layer
 # stays cached across code-only changes.
@@ -26,7 +25,11 @@ COPY src/Mecanica.Hermes.Pagamento.Application/Mecanica.Hermes.Pagamento.Applica
 COPY src/Mecanica.Hermes.Pagamento.Infrastructure/Mecanica.Hermes.Pagamento.Infrastructure.csproj src/Mecanica.Hermes.Pagamento.Infrastructure/
 COPY src/Mecanica.Hermes.Pagamento.Api/Mecanica.Hermes.Pagamento.Api.csproj                       src/Mecanica.Hermes.Pagamento.Api/
 
-RUN dotnet restore src/Mecanica.Hermes.Pagamento.Api/Mecanica.Hermes.Pagamento.Api.csproj
+# --mount=type=secret expõe o token apenas durante este RUN — não persiste em camadas.
+RUN --mount=type=secret,id=github_token \
+    GITHUB_USERNAME=${GITHUB_USERNAME} \
+    GITHUB_TOKEN=$(cat /run/secrets/github_token) \
+    dotnet restore src/Mecanica.Hermes.Pagamento.Api/Mecanica.Hermes.Pagamento.Api.csproj
 
 # Copy the full source and publish a framework-dependent release output.
 COPY src/ src/

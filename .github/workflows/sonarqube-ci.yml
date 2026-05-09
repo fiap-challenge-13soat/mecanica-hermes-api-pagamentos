@@ -75,7 +75,7 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_USERNAME: ${{ github.actor }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
           # Em eventos pull_request, github.head_ref/base_ref e o número do PR
           # alimentam as propriedades sonar.pullrequest.* — sem isso, o run é
           # registrado como branch analysis e a decoração no PR não acontece.

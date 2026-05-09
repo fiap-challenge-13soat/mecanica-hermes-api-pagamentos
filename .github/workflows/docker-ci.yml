@@ -28,9 +28,15 @@ jobs:
   docker:
     # Skip when the upstream CI run failed or was cancelled.
     # Tag pushes always proceed (the commit was already validated on main).
+    # For workflow_run, also require head_repository == this repo to refuse any
+    # commit originating from a fork (defense in depth — upstream CI only runs on
+    # push to main/feature/**, which forks can't perform, but Sonar flags the
+    # pattern anyway).
     if: >
       (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
-      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
+      (github.event_name == 'workflow_run' &&
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.head_repository.full_name == github.repository)
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -43,6 +49,9 @@ jobs:
           # workflow_run: build the exact commit that passed CI, not the current HEAD
           # (a newer commit may have landed between the CI run and this workflow starting)
           ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          # Don't leave the GITHUB_TOKEN on disk for subsequent steps — this job
+          # only builds and pushes a Docker image; no git operations are needed.
+          persist-credentials: false
 
       # docker/metadata-action reads GITHUB_SHA to generate the sha- tag.
       # For workflow_run events GITHUB_SHA points to the HEAD of the default branch
@@ -97,4 +106,5 @@ jobs:
           cache-to: type=gha,mode=max
           build-args: |
             GITHUB_USERNAME=${{ github.actor }}
-            GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
+          secrets: |
+            github_token=${{ secrets.PACKAGES_TOKEN }}
