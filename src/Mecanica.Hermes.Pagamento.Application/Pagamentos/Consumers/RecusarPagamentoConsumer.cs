@@ -6,7 +6,6 @@ using Mecanica.Hermes.Pagamento.Application.Pagamentos.Messages.Commands;
 using Mecanica.Hermes.Pagamento.Application.Pagamentos.Ports;
 using Mecanica.Hermes.Shared.Application.Messaging;
 using Mecanica.Hermes.Shared.Core.Persistence;
-using Mecanica.Hermes.Shared.Core.Persistence;
 
 namespace Mecanica.Hermes.Pagamento.Application.Pagamentos.Consumers;
 

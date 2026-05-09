@@ -233,7 +233,7 @@ internal sealed partial class MongoOutboxProcessor(
                 {
                     // Assemblies com tipos parcialmente carregáveis (dinâmicos / dependências
                     // ausentes) — usa apenas os tipos que conseguiram resolver.
-                    return ex.Types.Where(t => t is not null).ToArray()!;
+                    return ex.Types.OfType<Type>().ToArray();
                 }
             })
             .FirstOrDefault(t =>

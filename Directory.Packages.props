@@ -49,6 +49,11 @@
     <!-- MongoDB driver -->
     <PackageVersion Include="MongoDB.Driver" Version="3.7.1" />
     <PackageVersion Include="AspNetCore.HealthChecks.MongoDb" Version="9.0.0" />
+    <!-- Override transitive: MongoDB.Driver 3.7.1 puxa Snappier 1.0.0, vulnerável (GHSA-pggp-6c3x-2xmx).
+         Pinar versão patched força a resolução do NuGet a ignorar a transitiva. -->
+    <PackageVersion Include="Snappier" Version="1.3.1" />
+    <!-- Override transitive: Testcontainers puxa SharpCompress 0.30.1, vulnerável (GHSA-6c8g-7p36-r338). -->
+    <PackageVersion Include="SharpCompress" Version="0.48.0" />
     <!-- Mercado Pago SDK -->
     <PackageVersion Include="mercadopago-sdk" Version="2.8.0" />
     <!-- Test data faking & utilities -->
