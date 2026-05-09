@@ -21,7 +21,8 @@ namespace Mecanica.Hermes.Pagamento.Infrastructure.MassTransit.Saga;
 ///         determinística.
 ///     </para>
 /// </summary>
-[ExcludeFromCodeCoverage(Justification = "DSL de saga MassTransit — coberta por testes de integração com InMemoryHarness/RabbitMQ.")]
+[ExcludeFromCodeCoverage(Justification =
+    "DSL de saga MassTransit — coberta por testes de integração com InMemoryHarness/RabbitMQ.")]
 public class PagamentoStateMachine : MassTransitStateMachine<PagamentoState>
 {
     public static readonly TimeSpan OperationTimeoutDelay = TimeSpan.FromMinutes(5);

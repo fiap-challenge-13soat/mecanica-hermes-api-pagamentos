@@ -12,7 +12,8 @@ namespace Mecanica.Hermes.Pagamento.Infrastructure.Persistence.Outbox;
 ///     Remove periodicamente documentos do Outbox com <c>Status = Processed</c> cuja
 ///     data de processamento é anterior a <see cref="OutboxOptions.ProcessedRetention" />.
 /// </summary>
-[ExcludeFromCodeCoverage(Justification = "BackgroundService de limpeza Mongo — coberto por testes de integração com Testcontainers.")]
+[ExcludeFromCodeCoverage(Justification =
+    "BackgroundService de limpeza Mongo — coberto por testes de integração com Testcontainers.")]
 internal sealed partial class MongoOutboxCleanupService(
     IServiceScopeFactory scopeFactory,
     IOptions<OutboxOptions> options,

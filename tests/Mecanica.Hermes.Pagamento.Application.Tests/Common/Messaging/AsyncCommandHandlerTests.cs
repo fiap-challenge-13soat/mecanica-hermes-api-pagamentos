@@ -34,7 +34,8 @@ public class AsyncCommandHandlerTests
         result.StatusCode.Should().Be(System.Net.HttpStatusCode.Accepted);
 
         publisher.Verify(p => p.Publish(
-            It.Is<object>(m => m is GerarPagamentoRequest && ((GerarPagamentoRequest)m).PagamentoId == command.PagamentoId),
+            It.Is<object>(m =>
+                m is GerarPagamentoRequest && ((GerarPagamentoRequest)m).PagamentoId == command.PagamentoId),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 

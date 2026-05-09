@@ -45,7 +45,8 @@ public sealed class MercadoPagoCallbackConsumer(
                 if (pagamento.StatusAtual.StatusAtual == PagamentoStatus.Pago)
                 {
                     // Idempotência: webhook duplicado ou polling chegou primeiro.
-                    await context.Publish(new PagamentoConfirmadoEvent(pagamento.OrdemDeServicoId, pagamento.Id, DateTime.UtcNow));
+                    await context.Publish(new PagamentoConfirmadoEvent(
+                        pagamento.OrdemDeServicoId, pagamento.Id, DateTime.UtcNow));
                     await PublishCompleted(context);
                     return;
                 }
@@ -60,7 +61,8 @@ public sealed class MercadoPagoCallbackConsumer(
 
                 if (!await CommitOrFail(context, pagamento)) return;
 
-                await context.Publish(new PagamentoConfirmadoEvent(pagamento.OrdemDeServicoId, pagamento.Id, DateTime.UtcNow));
+                await context.Publish(new PagamentoConfirmadoEvent(
+                    pagamento.OrdemDeServicoId, pagamento.Id, DateTime.UtcNow));
                 metrics.PagamentoConfirmado(PagamentoConfirmadoVia.Webhook.ToString());
                 break;
 

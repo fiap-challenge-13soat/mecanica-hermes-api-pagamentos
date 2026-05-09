@@ -13,7 +13,8 @@ using Microsoft.Extensions.Logging;
 
 namespace Mecanica.Hermes.Pagamento.Api.Endpoints.Webhooks;
 
-[ExcludeFromCodeCoverage(Justification = "Definição de rota minimal API + handler — coberta por testes de integração com WireMock.")]
+[ExcludeFromCodeCoverage(Justification =
+    "Definição de rota minimal API + handler — coberta por testes de integração com WireMock.")]
 public static partial class MercadoPagoWebhookRoute
 {
     public static void MapMercadoPagoWebhook(this IEndpointRouteBuilder app)

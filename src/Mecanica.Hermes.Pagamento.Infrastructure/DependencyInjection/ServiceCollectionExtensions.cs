@@ -54,13 +54,15 @@ public static class ServiceCollectionExtensions
         // Mercado Pago
         services.Configure<MercadoPagoOptions>(options =>
         {
-            options.AccessToken = Environment.GetEnvironmentVariable(VariableNames.MercadoPagoAccessToken) ?? string.Empty;
-            options.PublicKey = Environment.GetEnvironmentVariable(VariableNames.MercadoPagoPublicKey) ?? string.Empty;
-            options.WebhookSecret = Environment.GetEnvironmentVariable(VariableNames.MercadoPagoWebhookSecret) ?? string.Empty;
-            options.NotificationUrl = Environment.GetEnvironmentVariable(VariableNames.MercadoPagoNotificationUrl) ?? string.Empty;
-            options.SuccessUrl = Environment.GetEnvironmentVariable(VariableNames.MercadoPagoSuccessUrl) ?? string.Empty;
-            options.FailureUrl = Environment.GetEnvironmentVariable(VariableNames.MercadoPagoFailureUrl) ?? string.Empty;
-            options.PendingUrl = Environment.GetEnvironmentVariable(VariableNames.MercadoPagoPendingUrl) ?? string.Empty;
+            static string Env(string name) => Environment.GetEnvironmentVariable(name) ?? string.Empty;
+
+            options.AccessToken = Env(VariableNames.MercadoPagoAccessToken);
+            options.PublicKey = Env(VariableNames.MercadoPagoPublicKey);
+            options.WebhookSecret = Env(VariableNames.MercadoPagoWebhookSecret);
+            options.NotificationUrl = Env(VariableNames.MercadoPagoNotificationUrl);
+            options.SuccessUrl = Env(VariableNames.MercadoPagoSuccessUrl);
+            options.FailureUrl = Env(VariableNames.MercadoPagoFailureUrl);
+            options.PendingUrl = Env(VariableNames.MercadoPagoPendingUrl);
             options.ApiBaseUrl = Environment.GetEnvironmentVariable(VariableNames.MercadoPagoApiBaseUrl)
                                  ?? DefaultMercadoPagoApiBaseUrl;
         });

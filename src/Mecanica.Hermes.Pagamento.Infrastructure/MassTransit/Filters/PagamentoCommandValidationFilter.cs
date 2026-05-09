@@ -5,7 +5,8 @@ using Microsoft.Extensions.Logging;
 
 namespace Mecanica.Hermes.Pagamento.Infrastructure.MassTransit.Filters;
 
-[ExcludeFromCodeCoverage(Justification = "Filtro MassTransit consume pipeline — exercitado pelos consumers em integração.")]
+[ExcludeFromCodeCoverage(Justification =
+    "Filtro MassTransit consume pipeline — exercitado pelos consumers em integração.")]
 internal sealed partial class PagamentoCommandValidationFilter<T>(
     ILogger<PagamentoCommandValidationFilter<T>> logger)
     : IFilter<ConsumeContext<T>>

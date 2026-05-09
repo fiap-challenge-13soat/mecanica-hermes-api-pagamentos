@@ -14,7 +14,8 @@ namespace Mecanica.Hermes.Pagamento.Infrastructure.MercadoPago;
 ///     A <c>BaseAddress</c> é configurada via <c>MERCADO_PAGO__API_BASE_URL</c> (default:
 ///     <c>https://api.mercadopago.com</c>), o que permite apontar para WireMock em testes E2E.
 /// </summary>
-[ExcludeFromCodeCoverage(Justification = "Adapter HTTP sobre a API do Mercado Pago — coberto por testes de integração com WireMock.")]
+[ExcludeFromCodeCoverage(Justification =
+    "Adapter HTTP sobre a API do Mercado Pago — coberto por testes de integração com WireMock.")]
 internal sealed partial class MercadoPagoPreferenceClient(
     HttpClient httpClient,
     IOptions<MercadoPagoOptions> options,

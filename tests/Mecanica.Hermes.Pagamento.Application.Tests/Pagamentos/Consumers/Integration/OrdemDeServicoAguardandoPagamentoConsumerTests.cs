@@ -63,7 +63,9 @@ public class OrdemDeServicoAguardandoPagamentoConsumerTests
         var (repo, clienteApi) = NewMocks();
         var ordemId = Guid.NewGuid();
         var clienteId = Guid.NewGuid();
-        var existente = PagamentoAggregate.Criar(Guid.NewGuid(), ordemId, clienteId, "e@x.com", "Cli", 100m, null).Data!;
+        var existente = PagamentoAggregate
+            .Criar(Guid.NewGuid(), ordemId, clienteId, "e@x.com", "Cli", 100m, null)
+            .Data!;
 
         repo.Setup(r => r.GetByOrdemDeServicoIdAsync(ordemId)).ReturnsAsync(existente);
 

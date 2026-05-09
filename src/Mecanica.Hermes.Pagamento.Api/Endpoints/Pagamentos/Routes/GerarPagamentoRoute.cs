@@ -15,7 +15,8 @@ using Microsoft.AspNetCore.Routing;
 
 namespace Mecanica.Hermes.Pagamento.Api.Endpoints.Pagamentos.Routes;
 
-[ExcludeFromCodeCoverage(Justification = "Definição de rota minimal API — coberta por testes de integração com WebApplicationFactory.")]
+[ExcludeFromCodeCoverage(Justification =
+    "Definição de rota minimal API — coberta por testes de integração com WebApplicationFactory.")]
 public static class GerarPagamentoRoute
 {
     public static void MapGerarPagamento(this IEndpointRouteBuilder endpoints)

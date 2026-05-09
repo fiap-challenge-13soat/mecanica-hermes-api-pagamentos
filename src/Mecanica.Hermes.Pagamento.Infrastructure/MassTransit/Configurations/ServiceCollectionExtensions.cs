@@ -8,7 +8,8 @@ using static System.Int32;
 
 namespace Mecanica.Hermes.Pagamento.Infrastructure.MassTransit.Configurations;
 
-[ExcludeFromCodeCoverage(Justification = "Composition root — escolhe transporte (RabbitMQ/InMemory) e registra saga + consumers.")]
+[ExcludeFromCodeCoverage(Justification =
+    "Composition root — escolhe transporte (RabbitMQ/InMemory) e registra saga + consumers.")]
 internal static class ServiceCollectionExtensions
 {
     public static void ConfigureMassTransit(this IServiceCollection services)
@@ -54,7 +55,9 @@ internal static class ServiceCollectionExtensions
     {
         services.AddMassTransit(x =>
         {
-            x.ConfigureSaga(mongoConnectionString: null, mongoDatabaseName: MassTransitOptions.DefaultMongoDbSagaDatabase);
+            x.ConfigureSaga(
+                mongoConnectionString: null,
+                mongoDatabaseName: MassTransitOptions.DefaultMongoDbSagaDatabase);
             x.UsingInMemory((context, cfg) =>
             {
                 cfg.UseDelayedMessageScheduler();

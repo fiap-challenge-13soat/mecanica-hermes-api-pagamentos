@@ -83,7 +83,8 @@ public sealed class VerificarStatusPagamentoConsumer(
         {
             throw;
         }
-        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or TimeoutException or JsonException)
+        catch (Exception ex) when (
+            ex is HttpRequestException or TaskCanceledException or TimeoutException or JsonException)
         {
             metrics.ErroRegistrado(OperacaoMetricKey, PagamentoMetricKeys.ErrorTypes.MercadoPagoError);
             await PublishFailed(context, $"Falha ao consultar status no Mercado Pago: {ex.Message}");

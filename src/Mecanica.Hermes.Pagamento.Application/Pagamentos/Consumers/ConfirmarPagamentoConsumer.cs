@@ -38,7 +38,8 @@ public sealed class ConfirmarPagamentoConsumer(
         // Idempotência: se já está pago, apenas reemite o callback à OS (defensivo) e completa.
         if (pagamento.StatusAtual.StatusAtual == PagamentoStatus.Pago)
         {
-            await context.Publish(new PagamentoConfirmadoEvent(pagamento.OrdemDeServicoId, pagamento.Id, DateTime.UtcNow));
+            await context.Publish(new PagamentoConfirmadoEvent(
+                pagamento.OrdemDeServicoId, pagamento.Id, DateTime.UtcNow));
             await PublishCompleted(context);
             return;
         }

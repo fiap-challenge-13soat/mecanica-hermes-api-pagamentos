@@ -3,7 +3,8 @@ using Mecanica.Hermes.Pagamento.Infrastructure.Settings;
 
 namespace Mecanica.Hermes.Pagamento.Infrastructure.Observability;
 
-[ExcludeFromCodeCoverage(Justification = "Apenas leitura de variáveis de ambiente do K8s/host — exercitado em runtime.")]
+[ExcludeFromCodeCoverage(Justification =
+    "Apenas leitura de variáveis de ambiente do K8s/host — exercitado em runtime.")]
 internal static class EnvironmentDetector
 {
     private const string Unknown = "unknown";

@@ -44,7 +44,8 @@ internal sealed partial class ClientCredentialsTokenProvider(
     {
         if (!_options.IsEnabled)
             throw new InvalidOperationException(
-                "M2MTokenProvider chamado sem configuração válida (M2M__TOKEN_ENDPOINT/CLIENT_ID/CLIENT_SECRET vazios). " +
+                "M2MTokenProvider chamado sem configuração válida " +
+                "(M2M__TOKEN_ENDPOINT/CLIENT_ID/CLIENT_SECRET vazios). " +
                 "Em Development/Testing o handler M2M não deve ser encadeado.");
 
         var now = timeProvider.GetUtcNow();

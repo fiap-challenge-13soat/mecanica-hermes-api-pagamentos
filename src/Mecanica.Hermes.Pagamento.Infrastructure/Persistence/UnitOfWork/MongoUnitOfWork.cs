@@ -15,7 +15,8 @@ namespace Mecanica.Hermes.Pagamento.Infrastructure.Persistence.UnitOfWork;
 ///     escrita do agregado. O <see cref="Outbox.MongoOutboxProcessor" /> em background
 ///     despacha cada documento via <see cref="IDomainEventDispatcher" />.
 /// </summary>
-[ExcludeFromCodeCoverage(Justification = "UoW Mongo com transação + outbox — coberto por testes de integração com Testcontainers.")]
+[ExcludeFromCodeCoverage(Justification =
+    "UoW Mongo com transação + outbox — coberto por testes de integração com Testcontainers.")]
 internal sealed partial class MongoUnitOfWork(
     MongoDbContext db,
     TimeProvider timeProvider,

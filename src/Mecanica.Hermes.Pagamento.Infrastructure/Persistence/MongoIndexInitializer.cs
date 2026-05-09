@@ -11,8 +11,11 @@ namespace Mecanica.Hermes.Pagamento.Infrastructure.Persistence;
 ///     "migrations" do mundo relacional. Operação idempotente — o driver pula índices
 ///     pré-existentes com a mesma definição.
 /// </summary>
-[ExcludeFromCodeCoverage(Justification = "Hosted service de bootstrap de índices Mongo — coberto por testes de integração.")]
-internal sealed partial class MongoIndexInitializer(MongoDbContext db, ILogger<MongoIndexInitializer> logger)
+[ExcludeFromCodeCoverage(Justification =
+    "Hosted service de bootstrap de índices Mongo — coberto por testes de integração.")]
+internal sealed partial class MongoIndexInitializer(
+    MongoDbContext db,
+    ILogger<MongoIndexInitializer> logger)
     : IHostedService
 {
     public async Task StartAsync(CancellationToken cancellationToken)

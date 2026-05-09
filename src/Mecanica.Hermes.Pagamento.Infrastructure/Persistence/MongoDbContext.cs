@@ -10,7 +10,8 @@ namespace Mecanica.Hermes.Pagamento.Infrastructure.Persistence;
 ///     API. Não expõe transações diretamente — sessões devem ser obtidas via
 ///     <see cref="StartSessionAsync" /> e propagadas para <c>MongoUnitOfWork</c>.
 /// </summary>
-[ExcludeFromCodeCoverage(Justification = "Wrapper de IMongoClient — coberto por testes de integração com Testcontainers.")]
+[ExcludeFromCodeCoverage(Justification =
+    "Wrapper de IMongoClient — coberto por testes de integração com Testcontainers.")]
 internal sealed class MongoDbContext
 {
     private readonly IMongoClient _client;

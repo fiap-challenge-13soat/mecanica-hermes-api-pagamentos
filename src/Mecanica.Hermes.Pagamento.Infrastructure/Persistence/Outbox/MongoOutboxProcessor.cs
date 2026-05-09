@@ -36,7 +36,8 @@ namespace Mecanica.Hermes.Pagamento.Infrastructure.Persistence.Outbox;
 ///         </item>
 ///     </list>
 /// </summary>
-[ExcludeFromCodeCoverage(Justification = "BackgroundService que faz I/O Mongo — coberto por testes de integração com Testcontainers.")]
+[ExcludeFromCodeCoverage(Justification =
+    "BackgroundService que faz I/O Mongo — coberto por testes de integração com Testcontainers.")]
 internal sealed partial class MongoOutboxProcessor(
     IServiceScopeFactory scopeFactory,
     OutboxHealthMetrics metrics,

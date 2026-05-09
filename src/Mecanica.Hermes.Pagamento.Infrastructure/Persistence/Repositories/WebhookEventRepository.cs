@@ -5,7 +5,8 @@ using MongoDB.Driver;
 
 namespace Mecanica.Hermes.Pagamento.Infrastructure.Persistence.Repositories;
 
-[ExcludeFromCodeCoverage(Justification = "Repositório Mongo (idempotência de webhook) — coberto por testes de integração.")]
+[ExcludeFromCodeCoverage(Justification =
+    "Repositório Mongo (idempotência de webhook) — coberto por testes de integração.")]
 internal sealed class WebhookEventRepository(MongoDbContext db, TimeProvider timeProvider)
     : IWebhookEventRepository
 {
