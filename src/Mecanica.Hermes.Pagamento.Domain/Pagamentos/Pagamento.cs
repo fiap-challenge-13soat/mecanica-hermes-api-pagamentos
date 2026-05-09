@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Mecanica.Hermes.Pagamento.Domain.Common.Abstractions;
 using Mecanica.Hermes.Pagamento.Domain.Pagamentos.Abstractions;
 using Mecanica.Hermes.Pagamento.Domain.Pagamentos.Enums;
@@ -15,6 +16,10 @@ namespace Mecanica.Hermes.Pagamento.Domain.Pagamentos;
 ///     por webhook e polling, e a publicação dos eventos de domínio que disparam o
 ///     callback à API de Ordem de Serviço.
 /// </summary>
+[SuppressMessage("Naming", "CA1724:Type names should not match namespaces",
+    Justification = "Conflito intencional entre o agregado raiz e o nome do bounded context. " +
+                    "'Pagamento' é o termo ubíquo do domínio; renomear o tipo ou o namespace " +
+                    "diluiria a linguagem ubíqua sem ganho real.")]
 public class Pagamento : AggregateRoot
 {
     /// <summary>
