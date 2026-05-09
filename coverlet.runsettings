@@ -5,8 +5,14 @@
       <DataCollector friendlyName="XPlat code coverage">
         <Configuration>
           <Format>cobertura,opencover</Format>
-          <ExcludeByFile>**/obj/**,**/bin/**,**/tests/**</ExcludeByFile>
-          <ExcludeByAttribute>Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute,ExcludeFromCodeCoverageAttribute</ExcludeByAttribute>
+          <ExcludeByFile>**/obj/**,**/bin/**,**/tests/**,**/*.g.cs,**/*.Designer.cs</ExcludeByFile>
+          <!-- IMPORTANTE: NÃO incluir `GeneratedCodeAttribute` aqui — coverlet 10.0 tem bug
+               onde isso faz o assembly Infrastructure inteiro sumir do XML, porque o source
+               generator do `[LoggerMessage]` aplica `[GeneratedCode]` aos métodos partial,
+               e a alta proporção dispara essa heurística. Código gerado é filtrado via
+               ExcludeByFile + filefilters do reportgenerator. ExcludeFromCodeCoverageAttribute
+               também é tratado nativamente pelo coverlet — não precisa listar. -->
+          <ExcludeByAttribute>Obsolete,CompilerGeneratedAttribute</ExcludeByAttribute>
           <Exclude>[Mecanica.Hermes.Pagamento.Api]*Program*,[*Tests]*,[Mecanica.Hermes.Pagamento.TestUtils]*</Exclude>
           <Include>[Mecanica.Hermes.Pagamento.Api]*,[Mecanica.Hermes.Pagamento.Application]*,[Mecanica.Hermes.Pagamento.Domain]*,[Mecanica.Hermes.Pagamento.Infrastructure]*</Include>
           <SkipAutoProps>true</SkipAutoProps>
