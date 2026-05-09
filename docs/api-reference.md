@@ -8,7 +8,7 @@ Base path: `/api/pagamentos` e `/api/webhooks/mercadopago`.
 
 Solicita a criação de um pagamento. Resposta `202 Accepted` com o `Id` gerado.
 
-**Body**
+#### **Body**
 
 ```json
 {
@@ -21,7 +21,7 @@ Solicita a criação de um pagamento. Resposta `202 Accepted` com o `Id` gerado.
 }
 ```
 
-**Resposta**
+#### **Resposta**
 
 ```json
 { "id": "guid-do-pagamento" }
