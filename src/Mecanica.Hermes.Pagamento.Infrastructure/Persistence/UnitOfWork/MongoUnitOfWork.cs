@@ -62,8 +62,11 @@ internal sealed partial class MongoUnitOfWork(
                     TraceContext = traceContext
                 });
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is JsonException or NotSupportedException)
             {
+                // JsonSerializer.Serialize lança JsonException (ciclo, profundidade) ou
+                // NotSupportedException (tipo sem conversor). Eventos individuais com payload
+                // inserializável são logados e o restante segue para o outbox.
                 LogSerializationFailure(logger, ex, evt.GetType().Name);
             }
 

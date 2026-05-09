@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text.Json;
 using MassTransit;
 using Mecanica.Hermes.Contracts.Integration;
 using Mecanica.Hermes.Pagamento.Application.Common.Messaging;
@@ -9,7 +10,7 @@ using Mecanica.Hermes.Pagamento.Application.Pagamentos.Ports;
 using Mecanica.Hermes.Pagamento.Domain.Pagamentos.Enums;
 using Mecanica.Hermes.Shared.Application.Messaging;
 using Mecanica.Hermes.Shared.Core.Persistence;
-using Mecanica.Hermes.Shared.Core.Persistence;
+using Mecanica.Hermes.Shared.Core.Results;
 
 namespace Mecanica.Hermes.Pagamento.Application.Pagamentos.Consumers;
 
@@ -34,9 +35,7 @@ public sealed class VerificarStatusPagamentoConsumer(
 
     public override async Task Consume(ConsumeContext<ExecuteVerificarStatusPagamento> context)
     {
-        var msg = context.Message;
-
-        var pagamento = await repository.GetByIdAsync(msg.PagamentoId);
+        var pagamento = await repository.GetByIdAsync(context.Message.PagamentoId);
         if (pagamento is null)
         {
             metrics.ErroRegistrado(OperacaoMetricKey, PagamentoMetricKeys.ErrorTypes.NotFound);
@@ -44,141 +43,170 @@ public sealed class VerificarStatusPagamentoConsumer(
             return;
         }
 
-        // Estados terminais: nada a fazer.
+        if (!ShouldConsultMercadoPago(pagamento))
+        {
+            await PublishCompleted(context);
+            return;
+        }
+
+        var outcome = await TryApplyOutcomeAsync(context, pagamento);
+        if (outcome.ShouldStop)
+            return;
+
+        if (!await TryPersistAsync(context, pagamento))
+            return;
+
+        await PublishTransitionEventAsync(context, pagamento, outcome.ConfirmadoVia);
+        await PublishCompleted(context);
+    }
+
+    private static bool ShouldConsultMercadoPago(Domain.Pagamentos.Pagamento pagamento)
+    {
         if (pagamento.StatusAtual.IsTerminal)
-        {
-            await PublishCompleted(context);
-            return;
-        }
+            return false;
 
-        // Só faz sentido consultar quando o link já foi gerado.
-        if (pagamento.StatusAtual.StatusAtual != PagamentoStatus.AguardandoConfirmacao &&
-            pagamento.StatusAtual.StatusAtual != PagamentoStatus.LinkGerado)
-        {
-            await PublishCompleted(context);
-            return;
-        }
+        var status = pagamento.StatusAtual.StatusAtual;
+        return status is PagamentoStatus.AguardandoConfirmacao or PagamentoStatus.LinkGerado;
+    }
 
+    private async Task<(bool ShouldStop, PagamentoConfirmadoVia? ConfirmadoVia)> TryApplyOutcomeAsync(
+        ConsumeContext<ExecuteVerificarStatusPagamento> context,
+        Domain.Pagamentos.Pagamento pagamento)
+    {
         var sw = Stopwatch.StartNew();
-        Domain.Pagamentos.Enums.PagamentoConfirmadoVia? confirmadoVia = null;
         try
         {
             var status = await mercadoPagoClient.GetPaymentStatusAsync(pagamento.Id, context.CancellationToken);
-
-            switch (status.Outcome)
-            {
-                case MercadoPagoPaymentOutcome.Approved:
-                    var confirm = pagamento.Confirmar(PagamentoConfirmadoVia.Polling);
-                    if (confirm.IsFailure)
-                    {
-                        metrics.ErroRegistrado(OperacaoMetricKey, PagamentoMetricKeys.ErrorTypes.InvalidStatus);
-                        await PublishFailed(context, confirm.Errors);
-                        return;
-                    }
-                    confirmadoVia = PagamentoConfirmadoVia.Polling;
-                    break;
-
-                case MercadoPagoPaymentOutcome.Rejected:
-                case MercadoPagoPaymentOutcome.Cancelled:
-                    var recusar = pagamento.Recusar(status.DetalheOriginal);
-                    if (recusar.IsFailure)
-                    {
-                        metrics.ErroRegistrado(OperacaoMetricKey, PagamentoMetricKeys.ErrorTypes.InvalidStatus);
-                        await PublishFailed(context, recusar.Errors);
-                        return;
-                    }
-                    break;
-
-                case MercadoPagoPaymentOutcome.Expired:
-                    var expirar = pagamento.Expirar();
-                    if (expirar.IsFailure)
-                    {
-                        metrics.ErroRegistrado(OperacaoMetricKey, PagamentoMetricKeys.ErrorTypes.InvalidStatus);
-                        await PublishFailed(context, expirar.Errors);
-                        return;
-                    }
-                    break;
-
-                case MercadoPagoPaymentOutcome.Pending:
-                case MercadoPagoPaymentOutcome.NotFound:
-                    var tentativa = pagamento.RegistrarTentativaVerificacao();
-                    if (tentativa.IsFailure)
-                    {
-                        await PublishCompleted(context);
-                        return;
-                    }
-
-                    if (!pagamento.PodeReverificar)
-                    {
-                        // Sem mais tentativas: expira o pagamento.
-                        var exp = pagamento.Expirar();
-                        if (exp.IsFailure)
-                        {
-                            metrics.ErroRegistrado(OperacaoMetricKey, PagamentoMetricKeys.ErrorTypes.InvalidStatus);
-                            await PublishFailed(context, exp.Errors);
-                            return;
-                        }
-                    }
-                    else
-                    {
-                        // Reagenda outra verificação no intervalo configurado.
-                        await context.SchedulePublish(
-                            schedulerOptions.PollingInterval,
-                            new VerificarStatusPagamentoRequest(pagamento.Id));
-                    }
-                    break;
-            }
+            return await ApplyOutcomeAsync(context, pagamento, status);
         }
-        catch (Exception ex)
+        catch (OperationCanceledException) when (context.CancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or TimeoutException or JsonException)
         {
             metrics.ErroRegistrado(OperacaoMetricKey, PagamentoMetricKeys.ErrorTypes.MercadoPagoError);
             await PublishFailed(context, $"Falha ao consultar status no Mercado Pago: {ex.Message}");
-            return;
+            return (true, null);
         }
         finally
         {
             sw.Stop();
             metrics.MercadoPagoConsultaDuracao(sw.Elapsed.TotalMilliseconds);
         }
+    }
 
+    private async Task<(bool ShouldStop, PagamentoConfirmadoVia? ConfirmadoVia)> ApplyOutcomeAsync(
+        ConsumeContext<ExecuteVerificarStatusPagamento> context,
+        Domain.Pagamentos.Pagamento pagamento,
+        MercadoPagoPaymentStatus status)
+    {
+        switch (status.Outcome)
+        {
+            case MercadoPagoPaymentOutcome.Approved:
+                return await ApplyTransitionAsync(
+                    context, pagamento.Confirmar(PagamentoConfirmadoVia.Polling), PagamentoConfirmadoVia.Polling);
+
+            case MercadoPagoPaymentOutcome.Rejected:
+            case MercadoPagoPaymentOutcome.Cancelled:
+                return await ApplyTransitionAsync(context, pagamento.Recusar(status.DetalheOriginal));
+
+            case MercadoPagoPaymentOutcome.Expired:
+                return await ApplyTransitionAsync(context, pagamento.Expirar());
+
+            case MercadoPagoPaymentOutcome.Pending:
+            case MercadoPagoPaymentOutcome.NotFound:
+                return await ApplyPendingAsync(context, pagamento);
+
+            default:
+                return (false, null);
+        }
+    }
+
+    private async Task<(bool ShouldStop, PagamentoConfirmadoVia? ConfirmadoVia)> ApplyTransitionAsync(
+        ConsumeContext<ExecuteVerificarStatusPagamento> context,
+        Result transition,
+        PagamentoConfirmadoVia? confirmadoVia = null)
+    {
+        if (transition.IsFailure)
+        {
+            metrics.ErroRegistrado(OperacaoMetricKey, PagamentoMetricKeys.ErrorTypes.InvalidStatus);
+            await PublishFailed(context, transition.Errors);
+            return (true, null);
+        }
+
+        return (false, confirmadoVia);
+    }
+
+    private async Task<(bool ShouldStop, PagamentoConfirmadoVia? ConfirmadoVia)> ApplyPendingAsync(
+        ConsumeContext<ExecuteVerificarStatusPagamento> context,
+        Domain.Pagamentos.Pagamento pagamento)
+    {
+        var tentativa = pagamento.RegistrarTentativaVerificacao();
+        if (tentativa.IsFailure)
+        {
+            await PublishCompleted(context);
+            return (true, null);
+        }
+
+        if (!pagamento.PodeReverificar)
+            return await ApplyTransitionAsync(context, pagamento.Expirar());
+
+        await context.SchedulePublish(
+            schedulerOptions.PollingInterval,
+            new VerificarStatusPagamentoRequest(pagamento.Id));
+        return (false, null);
+    }
+
+    private async Task<bool> TryPersistAsync(
+        ConsumeContext<ExecuteVerificarStatusPagamento> context,
+        Domain.Pagamentos.Pagamento pagamento)
+    {
         await repository.UpdateAsync(pagamento);
 
         try
         {
             await unitOfWork.CommitAsync(context.CancellationToken);
+            return true;
         }
         catch (ConcurrencyConflictException)
         {
             metrics.ErroRegistrado(OperacaoMetricKey, PagamentoMetricKeys.ErrorTypes.ConcurrencyConflict);
             await PublishFailed(context, "Conflito de concorrência. A operação será reprocessada.");
-            return;
+            return false;
         }
+    }
 
-        // Publicações cross-service derivadas da transição já aplicada.
-        if (pagamento.StatusAtual.StatusAtual == PagamentoStatus.Pago)
+    private async Task PublishTransitionEventAsync(
+        ConsumeContext<ExecuteVerificarStatusPagamento> context,
+        Domain.Pagamentos.Pagamento pagamento,
+        PagamentoConfirmadoVia? confirmadoVia)
+    {
+        switch (pagamento.StatusAtual.StatusAtual)
         {
-            await context.Publish(new PagamentoConfirmadoEvent(pagamento.OrdemDeServicoId, pagamento.Id, DateTime.UtcNow));
-            metrics.PagamentoConfirmado((confirmadoVia ?? PagamentoConfirmadoVia.Polling).ToString());
-        }
-        else if (pagamento.StatusAtual.StatusAtual == PagamentoStatus.Recusado)
-        {
-            await context.Publish(new PagamentoRecusadoEvent(
-                pagamento.OrdemDeServicoId,
-                pagamento.Id,
-                pagamento.UltimoMotivoFalha ?? "Pagamento recusado pelo Mercado Pago.",
-                DateTime.UtcNow));
-            metrics.PagamentoRecusado();
-        }
-        else if (pagamento.StatusAtual.StatusAtual == PagamentoStatus.Expirado)
-        {
-            await context.Publish(new PagamentoRecusadoEvent(
-                pagamento.OrdemDeServicoId,
-                pagamento.Id,
-                "Pagamento expirado.",
-                DateTime.UtcNow));
-            metrics.PagamentoExpirado();
-        }
+            case PagamentoStatus.Pago:
+                await context.Publish(new PagamentoConfirmadoEvent(
+                    pagamento.OrdemDeServicoId, pagamento.Id, DateTime.UtcNow));
+                metrics.PagamentoConfirmado((confirmadoVia ?? PagamentoConfirmadoVia.Polling).ToString());
+                break;
 
-        await PublishCompleted(context);
+            case PagamentoStatus.Recusado:
+                await context.Publish(new PagamentoRecusadoEvent(
+                    pagamento.OrdemDeServicoId,
+                    pagamento.Id,
+                    pagamento.UltimoMotivoFalha ?? "Pagamento recusado pelo Mercado Pago.",
+                    DateTime.UtcNow));
+                metrics.PagamentoRecusado();
+                break;
+
+            case PagamentoStatus.Expirado:
+                await context.Publish(new PagamentoRecusadoEvent(
+                    pagamento.OrdemDeServicoId,
+                    pagamento.Id,
+                    "Pagamento expirado.",
+                    DateTime.UtcNow));
+                metrics.PagamentoExpirado();
+                break;
+        }
     }
 }

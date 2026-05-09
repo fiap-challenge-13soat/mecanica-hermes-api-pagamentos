@@ -1,3 +1,4 @@
+using System.Globalization;
 using Mecanica.Hermes.Pagamento.Application.Pagamentos.Ports;
 using Mecanica.Hermes.Pagamento.Infrastructure.Settings;
 
@@ -24,11 +25,18 @@ internal sealed class PagamentoSchedulerOptions : IPagamentoSchedulerOptions
 
     private static TimeSpan ParseTimeSpan(string variable, TimeSpan fallback)
     {
-        return TimeSpan.TryParse(Environment.GetEnvironmentVariable(variable), out var v) ? v : fallback;
+        return TimeSpan.TryParse(
+            Environment.GetEnvironmentVariable(variable),
+            CultureInfo.InvariantCulture,
+            out var v) ? v : fallback;
     }
 
     private static int ParseInt(string variable, int fallback)
     {
-        return int.TryParse(Environment.GetEnvironmentVariable(variable), out var v) ? v : fallback;
+        return int.TryParse(
+            Environment.GetEnvironmentVariable(variable),
+            NumberStyles.Integer,
+            CultureInfo.InvariantCulture,
+            out var v) ? v : fallback;
     }
 }

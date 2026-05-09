@@ -12,12 +12,12 @@ public class EstadosTerminaisTests
 {
     private static readonly Action<IDomainEvent> NoopEvents = _ => { };
 
-    public static IEnumerable<object[]> EstadosTerminais()
+    public static TheoryData<PagamentoStatusBase, PagamentoStatus> EstadosTerminais() => new()
     {
-        yield return new object[] { new PagamentoPago(), PagamentoStatus.Pago };
-        yield return new object[] { new PagamentoRecusado(), PagamentoStatus.Recusado };
-        yield return new object[] { new PagamentoExpirado(), PagamentoStatus.Expirado };
-    }
+        { new PagamentoPago(), PagamentoStatus.Pago },
+        { new PagamentoRecusado(), PagamentoStatus.Recusado },
+        { new PagamentoExpirado(), PagamentoStatus.Expirado }
+    };
 
     [Theory]
     [MemberData(nameof(EstadosTerminais))]

@@ -74,7 +74,7 @@ internal sealed partial class MercadoPagoPreferenceClient(
             response = await httpClient.SendAsync(request, cancellationToken);
             response.EnsureSuccessStatusCode();
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or TimeoutException)
         {
             LogFalhaCriarPreference(logger, ex, pagamentoId);
             throw;
@@ -100,7 +100,7 @@ internal sealed partial class MercadoPagoPreferenceClient(
             response = await httpClient.SendAsync(request, cancellationToken);
             response.EnsureSuccessStatusCode();
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or TimeoutException)
         {
             LogFalhaConsultarStatus(logger, ex, pagamentoId);
             return new MercadoPagoPaymentStatus(MercadoPagoPaymentOutcome.NotFound, "error");

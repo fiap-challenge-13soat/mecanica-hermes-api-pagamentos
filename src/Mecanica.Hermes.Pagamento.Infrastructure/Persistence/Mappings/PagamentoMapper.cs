@@ -59,19 +59,13 @@ internal static class PagamentoMapper
             : Enum.Parse<PagamentoStatus>(document.StatusDestino);
 
         var statusAtual = CriarStatusInstancia(statusAtualEnum);
-        statusAtual.GetType();
-        // Restaura via método interno do StatusBase
-        typeof(PagamentoStatusBase)
-            .GetMethod("Restaurar",
-                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
-            .Invoke(statusAtual, [
-                Guid.NewGuid(),
-                statusDestinoEnum,
-                document.StatusInicio,
-                document.StatusFinalizacao,
-                document.CreatedAt,
-                document.UpdatedAt
-            ]);
+        statusAtual.Restaurar(
+            Guid.NewGuid(),
+            statusDestinoEnum,
+            document.StatusInicio,
+            document.StatusFinalizacao,
+            document.CreatedAt,
+            document.UpdatedAt);
 
         var emailResult = EmailCliente.Criar(document.EmailCliente);
         var valorResult = Dinheiro.Criar(document.Valor, document.Moeda);

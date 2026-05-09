@@ -22,8 +22,15 @@ internal sealed partial class DomainEventDispatcher(
                 var notification = (INotification)Activator.CreateInstance(notificationType, e)!;
                 await publisher.Publish(notification, ct);
             }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                // Cancelamento do host/outbox deve abortar o batch — não tratar como falha de handler.
+                throw;
+            }
             catch (Exception ex)
             {
+                // Fronteira de erro intencional: um handler de notificação MediatR quebrado
+                // não pode abortar o processamento dos demais eventos do batch (Sonar S2221 dispensado).
                 LogDispatchFailure(logger, ex, e.GetType().Name);
             }
     }

@@ -158,5 +158,3 @@ lifetime.ApplicationStarted.Register(() =>
     logger.LogInformation("API de Pagamentos iniciada com sucesso."));
 
 await app.RunAsync();
-
-public partial class Program;

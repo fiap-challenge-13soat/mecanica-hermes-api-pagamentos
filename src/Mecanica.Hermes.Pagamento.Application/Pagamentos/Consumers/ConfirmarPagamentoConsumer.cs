@@ -7,14 +7,13 @@ using Mecanica.Hermes.Pagamento.Application.Pagamentos.Ports;
 using Mecanica.Hermes.Pagamento.Domain.Pagamentos.Enums;
 using Mecanica.Hermes.Shared.Application.Messaging;
 using Mecanica.Hermes.Shared.Core.Persistence;
-using Mecanica.Hermes.Shared.Core.Persistence;
 
 namespace Mecanica.Hermes.Pagamento.Application.Pagamentos.Consumers;
 
 /// <summary>
 ///     Consumer que confirma o pagamento (origem: webhook do Mercado Pago ou polling
 ///     que retornou <c>approved</c>). Após confirmar localmente, publica
-///     <see cref="PagamentoAprovadoRequest" /> no bus para a SAGA da OS finalizar o ciclo.
+///     <see cref="PagamentoConfirmadoEvent" /> no bus para a SAGA da OS finalizar o ciclo.
 /// </summary>
 public sealed class ConfirmarPagamentoConsumer(
     IPagamentoRepository repository,

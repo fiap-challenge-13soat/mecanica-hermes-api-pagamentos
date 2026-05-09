@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Text.Json;
 using Mecanica.Hermes.Pagamento.Domain.Common.Abstractions;
 using Mecanica.Hermes.Pagamento.Infrastructure.Observability;
@@ -152,8 +153,17 @@ internal sealed partial class MongoOutboxProcessor(
                 metrics.MessageDispatched();
                 activity?.SetStatus(ActivityStatusCode.Ok);
             }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                // Cancelamento do host deve abortar o batch — não marcar o doc como falho
+                // (será reprocessado na próxima rodada quando o claim TTL expirar).
+                throw;
+            }
             catch (Exception ex)
             {
+                // Fronteira de erro intencional por documento: qualquer falha (deserialização,
+                // dispatch, I/O Mongo) é registrada no doc com retry++ e o batch segue
+                // (Sonar S2221 dispensado).
                 LogFalhaDispatch(logger, ex, doc.Id, doc.Type, doc.RetryCount + 1);
                 await MarkFailedAsync(db, doc, ex.Message, ct);
                 RecordFailure(doc, activity);
@@ -219,9 +229,11 @@ internal sealed partial class MongoOutboxProcessor(
                 {
                     return a.GetTypes();
                 }
-                catch
+                catch (ReflectionTypeLoadException ex)
                 {
-                    return [];
+                    // Assemblies com tipos parcialmente carregáveis (dinâmicos / dependências
+                    // ausentes) — usa apenas os tipos que conseguiram resolver.
+                    return ex.Types.Where(t => t is not null).ToArray()!;
                 }
             })
             .FirstOrDefault(t =>

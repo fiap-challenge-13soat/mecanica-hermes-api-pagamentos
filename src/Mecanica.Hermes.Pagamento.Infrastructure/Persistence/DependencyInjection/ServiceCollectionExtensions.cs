@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using Mecanica.Hermes.Pagamento.Domain.Common.Abstractions;
 using Mecanica.Hermes.Pagamento.Infrastructure.Persistence.Events;
 using Mecanica.Hermes.Pagamento.Infrastructure.Persistence.Outbox;
@@ -53,17 +54,28 @@ internal static class ServiceCollectionExtensions
         {
             if (TimeSpan.TryParse(
                     Environment.GetEnvironmentVariable(VariableNames.OutboxPollInterval),
+                    CultureInfo.InvariantCulture,
                     out var interval))
                 options.PollInterval = interval;
 
-            if (int.TryParse(Environment.GetEnvironmentVariable(VariableNames.OutboxBatchSize), out var batch))
+            if (int.TryParse(
+                    Environment.GetEnvironmentVariable(VariableNames.OutboxBatchSize),
+                    NumberStyles.Integer,
+                    CultureInfo.InvariantCulture,
+                    out var batch))
                 options.BatchSize = batch;
 
-            if (int.TryParse(Environment.GetEnvironmentVariable(VariableNames.OutboxMaxRetries), out var retries))
+            if (int.TryParse(
+                    Environment.GetEnvironmentVariable(VariableNames.OutboxMaxRetries),
+                    NumberStyles.Integer,
+                    CultureInfo.InvariantCulture,
+                    out var retries))
                 options.MaxRetries = retries;
 
             if (int.TryParse(
                     Environment.GetEnvironmentVariable(VariableNames.OutboxProcessedRetentionDays),
+                    NumberStyles.Integer,
+                    CultureInfo.InvariantCulture,
                     out var days))
                 options.ProcessedRetention = TimeSpan.FromDays(days);
         });

@@ -26,6 +26,15 @@ namespace Mecanica.Hermes.Pagamento.Infrastructure.DependencyInjection;
 [ExcludeFromCodeCoverage(Justification = "Composition root — coberto por testes de integração.")]
 public static class ServiceCollectionExtensions
 {
+    // Default público da API do Mercado Pago. Sobrescrito por MERCADO_PAGO__API_BASE_URL
+    // (necessário para apontar ao WireMock nos testes E2E).
+    private const string DefaultMercadoPagoApiBaseUrl = "https://api.mercadopago.com/";
+
+    // Separador de segmento de URI — exigido pelo HttpClient.BaseAddress como
+    // sufixo, ou requests relativos (ex.: "checkout/preferences") perdem o último
+    // segmento por causa da semântica do RFC 3986 §5.3.
+    private const string UriSegmentSeparator = "/";
+
     public static void ConfigureInfrastructureServices(this IServiceCollection services, Assembly apiAssemblyMarker)
     {
         services.AddMongoPersistence();
@@ -53,14 +62,17 @@ public static class ServiceCollectionExtensions
             options.FailureUrl = Environment.GetEnvironmentVariable(VariableNames.MercadoPagoFailureUrl) ?? string.Empty;
             options.PendingUrl = Environment.GetEnvironmentVariable(VariableNames.MercadoPagoPendingUrl) ?? string.Empty;
             options.ApiBaseUrl = Environment.GetEnvironmentVariable(VariableNames.MercadoPagoApiBaseUrl)
-                                 ?? "https://api.mercadopago.com";
+                                 ?? DefaultMercadoPagoApiBaseUrl;
         });
         services.AddSingleton<WebhookSignatureValidator>();
         var mpBaseUrl = Environment.GetEnvironmentVariable(VariableNames.MercadoPagoApiBaseUrl)
-                        ?? "https://api.mercadopago.com";
+                        ?? DefaultMercadoPagoApiBaseUrl;
         services.AddHttpClient<IMercadoPagoClient, MercadoPagoPreferenceClient>(client =>
             {
-                client.BaseAddress = new Uri(mpBaseUrl.TrimEnd('/') + "/");
+                var normalizedBase = mpBaseUrl.EndsWith(UriSegmentSeparator, StringComparison.Ordinal)
+                    ? mpBaseUrl
+                    : mpBaseUrl + UriSegmentSeparator;
+                client.BaseAddress = new Uri(normalizedBase, UriKind.Absolute);
             })
             .AddStandardResilienceHandler(options =>
             {

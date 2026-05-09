@@ -32,7 +32,7 @@ public static class InfrastructureHealthChecksExtensions
 
     private static class MongoDbDriverFactory
     {
-        public static MongoDB.Driver.IMongoClient Create(string connectionString)
+        public static MongoDB.Driver.MongoClient Create(string connectionString)
         {
             return new MongoDB.Driver.MongoClient(connectionString);
         }

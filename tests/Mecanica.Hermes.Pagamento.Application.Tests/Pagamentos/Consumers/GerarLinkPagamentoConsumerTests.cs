@@ -147,7 +147,7 @@ public class GerarLinkPagamentoConsumerTests
                 It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>(),
                 It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<DateTime?>(),
                 It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new InvalidOperationException("MP indisponivel"));
+            .ThrowsAsync(new HttpRequestException("MP indisponivel"));
 
         await using var provider = BuildProvider(repo, uow, mp, metrics, scheduler);
         var harness = provider.GetRequiredService<ITestHarness>();

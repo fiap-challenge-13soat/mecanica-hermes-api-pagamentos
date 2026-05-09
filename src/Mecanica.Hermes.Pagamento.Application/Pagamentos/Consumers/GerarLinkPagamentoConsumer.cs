@@ -1,3 +1,4 @@
+using System.Text.Json;
 using MassTransit;
 using Mecanica.Hermes.Contracts.Integration;
 using Mecanica.Hermes.Pagamento.Application.Common.Messaging;
@@ -17,7 +18,7 @@ namespace Mecanica.Hermes.Pagamento.Application.Pagamentos.Consumers;
 ///         <item>Constrói o agregado <c>Pagamento</c> via factory de domínio.</item>
 ///         <item>Chama o Mercado Pago para criar a preference (link de pagamento).</item>
 ///         <item>Aplica <c>GerarLink</c> e <c>MarcarEmailEnviado</c> no agregado.</item>
-///         <item>Publica <see cref="EnviarEmailPagamentoCommand" /> para a lambda de e-mail.</item>
+///         <item>Publica <see cref="LinkPagamentoGeradoEvent" /> para a lambda de e-mail.</item>
 ///         <item>Agenda o primeiro <see cref="VerificarStatusPagamentoRequest" /> (polling).</item>
 ///         <item>Persiste e publica <c>PagamentoOperationCompleted</c>.</item>
 ///     </list>
@@ -74,8 +75,16 @@ public sealed class GerarLinkPagamentoConsumer(
                 pagamento.Vencimento,
                 context.CancellationToken);
         }
-        catch (Exception ex)
+        catch (OperationCanceledException) when (context.CancellationToken.IsCancellationRequested)
         {
+            // Cancelamento deve subir para o bus reagendar via redelivery.
+            throw;
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException)
+        {
+            // HttpRequestException: rede / status != 2xx (após EnsureSuccessStatusCode)
+            // TaskCanceledException: timeout do HttpClient (não confundir com cancelamento do bus)
+            // JsonException: payload inesperado da API do MP
             metrics.ErroRegistrado(OperacaoMetricKey, PagamentoMetricKeys.ErrorTypes.MercadoPagoError);
             await PublishFailed(context, $"Falha ao criar preference no Mercado Pago: {ex.Message}");
             return;

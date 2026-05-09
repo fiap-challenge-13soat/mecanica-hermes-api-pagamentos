@@ -9,6 +9,9 @@ namespace Mecanica.Hermes.Pagamento.TestUtils.Builders;
 /// </summary>
 public sealed class PagamentoBuilder
 {
+    public const string DefaultPreferenceId = "TEST-PREF";
+    public const string DefaultPagamentoUrl = "https://mp.example/pay";
+
     private static readonly Faker _faker = new("pt_BR");
 
     private Guid _id = Guid.NewGuid();
@@ -89,7 +92,9 @@ public sealed class PagamentoBuilder
     }
 
     /// <summary>Atalho: cria um pagamento já com link gerado (status AguardandoConfirmacao).</summary>
-    public PagamentoAggregate BuildAguardandoConfirmacao(string preferenceId = "TEST-PREF", string url = "https://mp.example/pay")
+    public PagamentoAggregate BuildAguardandoConfirmacao(
+        string preferenceId = DefaultPreferenceId,
+        string url = DefaultPagamentoUrl)
     {
         var pagamento = Build();
         var ger = pagamento.GerarLink(preferenceId, url);
