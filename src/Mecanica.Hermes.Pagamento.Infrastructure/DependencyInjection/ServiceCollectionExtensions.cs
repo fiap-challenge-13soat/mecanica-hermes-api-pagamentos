@@ -30,6 +30,10 @@ public static class ServiceCollectionExtensions
     // (necessário para apontar ao WireMock nos testes E2E).
     private const string DefaultMercadoPagoApiBaseUrl = "https://api.mercadopago.com/";
 
+    // Default da API de Cadastros para desenvolvimento local. Sobrescrito por
+    // CADASTROS__API_BASE_URL em qualquer ambiente acima de Development.
+    private const string DefaultCadastrosApiBaseUrl = "http://localhost:5000/";
+
     // Separador de segmento de URI — exigido pelo HttpClient.BaseAddress como
     // sufixo, ou requests relativos (ex.: "checkout/preferences") perdem o último
     // segmento por causa da semântica do RFC 3986 §5.3.
@@ -107,10 +111,13 @@ public static class ServiceCollectionExtensions
         }
 
         var cadastrosBaseUrl = Environment.GetEnvironmentVariable(VariableNames.CadastrosApiBaseUrl)
-                               ?? "http://localhost:5000/";
+                               ?? DefaultCadastrosApiBaseUrl;
         var cadastrosClientBuilder = services.AddHttpClient<IClienteApiClient, ClienteApiClient>(client =>
             {
-                client.BaseAddress = new Uri(cadastrosBaseUrl.TrimEnd('/') + "/");
+                var normalizedBase = cadastrosBaseUrl.EndsWith(UriSegmentSeparator, StringComparison.Ordinal)
+                    ? cadastrosBaseUrl
+                    : cadastrosBaseUrl + UriSegmentSeparator;
+                client.BaseAddress = new Uri(normalizedBase, UriKind.Absolute);
             });
 
         // O DelegatingHandler precisa rodar ANTES do StandardResilienceHandler para que
