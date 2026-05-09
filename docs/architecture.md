@@ -2,10 +2,12 @@
 
 **Clean Architecture + DDD + CQRS** com a mesma divisão da API de Ordem de Serviço:
 
-```
-Api ─────► Application ─────► Domain
-            ▲
-Infrastructure ────────────────┘ (implementa ports)
+```mermaid
+graph LR
+    Api --> Application
+    Application --> Domain
+    Infrastructure --> Application
+    Infrastructure -.->|implementa ports| Domain
 ```
 
 ## Camadas

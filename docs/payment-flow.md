@@ -2,17 +2,19 @@
 
 ## Máquina de estados
 
-```
-PendenteGeracao
-    │ GerarLink (chama Mercado Pago, cria preference)
-    ▼
-LinkGerado
-    │ MarcarEmailEnviado (após publish do EnviarEmailPagamentoCommand)
-    ▼
-AguardandoConfirmacao
-    │ Confirmar(via)  ─► Pago      (final)
-    │ Recusar(motivo) ─► Recusado  (final)
-    │ Expirar         ─► Expirado  (final)
+```mermaid
+stateDiagram-v2
+    [*] --> PendenteGeracao
+    PendenteGeracao --> LinkGerado : GerarLink\n(chama Mercado Pago, cria preference)
+    PendenteGeracao --> Expirado : Expirar
+    LinkGerado --> AguardandoConfirmacao : MarcarEmailEnviado\n(após publish do EnviarEmailPagamentoCommand)
+    LinkGerado --> Expirado : Expirar
+    AguardandoConfirmacao --> Pago : Confirmar(via)
+    AguardandoConfirmacao --> Recusado : Recusar(motivo)
+    AguardandoConfirmacao --> Expirado : Expirar
+    Pago --> [*]
+    Recusado --> [*]
+    Expirado --> [*]
 ```
 
 `PendenteGeracao` e `LinkGerado` também aceitam `Expirar` (timeout de geração ou link vencido).
