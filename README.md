@@ -136,6 +136,35 @@ just test-unit
 Cobertura mínima exigida pelo CI: **≥ 80%** de linhas. Veja
 [`docs/testing.md`](./docs/testing.md) para detalhes.
 
+## Stack completa via Docker Compose
+
+O `docker-compose.yml` da stack inteira do ecossistema Mecânica Hermes — Postgres,
+MongoDB (com replica set), RabbitMQ (com plugin de delayed exchange), **WireMock como
+mock do Mercado Pago** e as 3 APIs (`api-ordem-servico`, `api-cadastros`,
+`api-pagamentos`) — **vive no repositório de testes E2E**,
+[`mecanica-hermes-tests-e2e`](https://github.com/fiap-challenge-13soat/mecanica-hermes-tests-e2e).
+É a forma canônica de rodar o ecossistema localmente sem precisar buildar cada API
+nem expor a integração ao sandbox real do Mercado Pago:
+
+```bash
+git clone https://github.com/fiap-challenge-13soat/mecanica-hermes-tests-e2e.git ../mecanica-hermes-tests-e2e
+cd ../mecanica-hermes-tests-e2e
+docker compose \
+  -f docker-compose/docker-compose.yaml \
+  -f docker-compose/docker-compose.e2e.yaml \
+  up -d --wait
+```
+
+A imagem desta API consumida pelo compose vem do Docker Hub
+(`mechermes/mecanica-hermes-api-pagamentos:latest`), republicada automaticamente pelo
+workflow [`Build and Publish Docker Image`](./.github/workflows/docker-ci.yml) a cada
+merge na `main`. Para apontar para uma tag específica, exporte
+`PAGAMENTOS_IMAGE_TAG=<sha-curto-ou-versão>` antes do `compose up`.
+
+WireMock fica em `http://wiremock:8080` (rede docker) / `http://localhost:8090`
+(host). Mappings padrão estão em `docker-compose/services/wiremock/mappings/`; a
+suíte E2E pode injetar mappings dinâmicos via `POST /__admin/mappings`.
+
 ## Endpoints
 
 Base path: `/api/pagamentos` e `/api/webhooks/mercadopago`.
