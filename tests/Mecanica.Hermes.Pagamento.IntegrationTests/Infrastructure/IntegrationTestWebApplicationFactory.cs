@@ -32,17 +32,31 @@ public sealed class IntegrationTestWebApplicationFactory : WebApplicationFactory
     /// <summary>Token de acesso do MercadoPago (placeholder — não há chamadas reais nos testes).</summary>
     public const string MercadoPagoAccessToken = "TEST-ACCESS-TOKEN";
 
-    // Sem replica set: o standalone basta para os testes atuais. Replica set será
-    // necessário quando implementarmos transactional outbox real (sessão Mongo
-    // compartilhada entre repositório e UoW). `WithReplicaSet()` no Windows tem
-    // problema conhecido de hostname-resolution (driver descobre primary via
-    // hostname interno do container e falha do host).
-    private readonly MongoDbContainer _mongoContainer = new MongoDbBuilder("mongo:7.0").Build();
+    // Replica set é obrigatório para o transactional outbox (sessão Mongo + StartTransaction).
+    // No Windows, o driver normalmente falha por discovery (primary se anuncia com hostname
+    // interno do container) — mitigamos forçando `directConnection=true` na connection string
+    // (ver MongoConnectionString abaixo).
+    private readonly MongoDbContainer _mongoContainer = new MongoDbBuilder("mongo:7.0")
+        .WithReplicaSet()
+        .Build();
 
     /// <summary>Fake do <see cref="IClienteApiClient" /> — pré-configurado para devolver um cliente válido.</summary>
     public FakeClienteApiClient ClienteApi { get; } = new();
 
-    public string MongoConnectionString => _mongoContainer.GetConnectionString();
+    public string MongoConnectionString
+    {
+        get
+        {
+            var raw = _mongoContainer.GetConnectionString();
+            // `directConnection=true` ignora a auto-discovery de membros (que falha em Windows
+            // porque o primary se anuncia como o hostname interno do container) e mantém uma
+            // conexão direta — transactions continuam funcionando porque o servidor está em
+            // modo replicaSet, mesmo que o cliente o veja como "Standalone".
+            return raw.Contains('?', StringComparison.Ordinal)
+                ? raw + "&directConnection=true"
+                : raw + "?directConnection=true";
+        }
+    }
     public string DatabaseName { get; } = $"pagamentos_test_{Guid.NewGuid():N}";
 
     public async Task InitializeAsync()

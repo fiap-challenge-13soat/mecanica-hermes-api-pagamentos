@@ -47,7 +47,12 @@ internal static class ServiceCollectionExtensions
         services.AddSingleton<MongoDbContext>();
         services.AddSingleton(TimeProvider.System);
 
-        services.AddScoped<IUnitOfWork, MongoUnitOfWork>();
+        // Registramos a implementação concreta como Scoped e expomos via DUAS interfaces
+        // (IUnitOfWork público + IMongoUnitOfWork interno) para que repositórios Mongo
+        // possam pedir a sessão sem expor detalhe de transporte na port pública.
+        services.AddScoped<MongoUnitOfWork>();
+        services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<MongoUnitOfWork>());
+        services.AddScoped<IMongoUnitOfWork>(sp => sp.GetRequiredService<MongoUnitOfWork>());
         services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
 
         services.Configure<OutboxOptions>(options =>

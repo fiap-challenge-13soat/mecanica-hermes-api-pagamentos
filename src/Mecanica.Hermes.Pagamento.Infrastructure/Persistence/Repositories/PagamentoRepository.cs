@@ -3,6 +3,7 @@ using Mecanica.Hermes.Pagamento.Application.Pagamentos.Ports;
 using Mecanica.Hermes.Pagamento.Domain.Pagamentos.Enums;
 using Mecanica.Hermes.Pagamento.Infrastructure.Persistence.Entities;
 using Mecanica.Hermes.Pagamento.Infrastructure.Persistence.Mappings;
+using Mecanica.Hermes.Pagamento.Infrastructure.Persistence.UnitOfWork;
 using Mecanica.Hermes.Shared.Core.Pagination;
 using Mecanica.Hermes.Shared.Core.Persistence;
 using MongoDB.Driver;
@@ -10,10 +11,11 @@ using MongoDB.Driver;
 namespace Mecanica.Hermes.Pagamento.Infrastructure.Persistence.Repositories;
 
 [ExcludeFromCodeCoverage(Justification = "Repositório Mongo — coberto por testes de integração com Testcontainers.")]
-internal sealed class PagamentoRepository(MongoDbContext db, IUnitOfWork uow) : IPagamentoRepository
+internal sealed class PagamentoRepository(MongoDbContext db, IMongoUnitOfWork uow) : IPagamentoRepository
 {
     public async Task<Domain.Pagamentos.Pagamento?> GetByIdAsync(Guid id)
     {
+        // Reads não participam da transação — não há needs de isolation snapshot aqui.
         var doc = await db.Pagamentos
             .Find(d => d.Id == id)
             .FirstOrDefaultAsync();
@@ -73,15 +75,20 @@ internal sealed class PagamentoRepository(MongoDbContext db, IUnitOfWork uow) : 
 
     public async Task AddAsync(Domain.Pagamentos.Pagamento pagamento)
     {
+        // Sessão é compartilhada com o UoW — Insert do agregado e Insert dos outbox docs
+        // serão comitados juntos (ou abortados juntos) na transação Mongo.
+        var session = await uow.GetOrStartSessionAsync(CancellationToken.None);
         var document = pagamento.ToDocument(version: 1);
-        await db.Pagamentos.InsertOneAsync(document);
+        await db.Pagamentos.InsertOneAsync(session, document);
         uow.CollectEventsFrom(pagamento);
     }
 
     public async Task UpdateAsync(Domain.Pagamentos.Pagamento pagamento)
     {
+        var session = await uow.GetOrStartSessionAsync(CancellationToken.None);
+
         var existing = await db.Pagamentos
-            .Find(d => d.Id == pagamento.Id)
+            .Find(session, d => d.Id == pagamento.Id)
             .Project(d => new { d.Version })
             .FirstOrDefaultAsync();
 
@@ -97,6 +104,7 @@ internal sealed class PagamentoRepository(MongoDbContext db, IUnitOfWork uow) : 
             Builders<PagamentoDocument>.Filter.Eq(d => d.Version, currentVersion));
 
         var result = await db.Pagamentos.ReplaceOneAsync(
+            session,
             filter,
             document,
             new ReplaceOptions { IsUpsert = false });

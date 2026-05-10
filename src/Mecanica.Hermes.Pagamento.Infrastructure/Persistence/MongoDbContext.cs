@@ -7,10 +7,9 @@ namespace Mecanica.Hermes.Pagamento.Infrastructure.Persistence;
 
 /// <summary>
 ///     Wrapper fino sobre <see cref="IMongoClient" /> com acesso tipado às coleções usadas pela
-///     API. <see cref="StartSessionAsync" /> está disponível para callers que precisem iniciar
-///     sessões/transactions Mongo (replica set), mas o <c>MongoUnitOfWork</c> atual não as
-///     consome — agregado e outbox são escritos sem compartilhar sessão. A reconciliação de
-///     consistência fica a cargo do outbox processor (at-least-once).
+///     API. <see cref="StartSessionAsync" /> é consumido pelo <c>MongoUnitOfWork</c> para
+///     iniciar uma sessão Mongo (replica set obrigatório) e materializar agregado + outbox
+///     na mesma transaction (commit atômico ponta a ponta).
 /// </summary>
 [ExcludeFromCodeCoverage(Justification =
     "Wrapper de IMongoClient — coberto por testes de integração com Testcontainers.")]
