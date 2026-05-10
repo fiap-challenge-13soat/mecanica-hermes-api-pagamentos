@@ -86,5 +86,7 @@ public class PagamentoSchedulerOptionsTests
 
 [CollectionDefinition("EnvironmentVariableSerial", DisableParallelization = true)]
 #pragma warning disable CA1711
-public sealed class EnvironmentVariableSerialCollection;
+public sealed class EnvironmentVariableSerialCollection
+{
+}
 #pragma warning restore CA1711
