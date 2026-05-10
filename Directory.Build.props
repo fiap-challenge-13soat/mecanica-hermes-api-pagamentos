@@ -31,8 +31,9 @@
         <!-- xUnit AAA-style naming (Method_Scenario_Expected) é intencional em testes.
              CA1724 (test class shares name with namespace) é esperado em ArchitectureTests/IntegrationTests.
              CA1861 (static readonly arrays) é irrelevante em [Fact] que executa 1x por suíte.
-             CA1873 dispara em matchers Moq (It.IsAny<>), não em invocações reais de logger. -->
-        <NoWarn>$(NoWarn);CA1707;CA1724;CA1861;CA1873</NoWarn>
+             CA1873 dispara em matchers Moq (It.IsAny<>), não em invocações reais de logger.
+             CA1711 (sufixo Collection) é convenção do xUnit para CollectionDefinition. -->
+        <NoWarn>$(NoWarn);CA1707;CA1724;CA1861;CA1873;CA1711</NoWarn>
     </PropertyGroup>
 
     <!-- Roslyn code analyzers for all projects -->
