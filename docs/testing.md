@@ -26,6 +26,6 @@ Mocks devem retornar pagamentos no estado esperado pelo consumer. Para
 `ConfirmarPagamentoConsumer`, configure `IPagamentoRepository.GetByIdAsync(id)` para retornar
 um pagamento `AguardandoConfirmacao` e verifique:
 
-1. `PagamentoAprovadoRequest` foi publicado;
+1. `PagamentoConfirmadoEvent` foi publicado;
 2. `PagamentoOperationCompleted` foi publicado;
 3. `IPagamentoMetrics.PagamentoConfirmado` foi chamado.

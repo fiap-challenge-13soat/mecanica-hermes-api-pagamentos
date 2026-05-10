@@ -45,7 +45,9 @@ Para ambientes onde a criação é feita externamente (operação por DBA), defi
 
 ## Convenções BSON
 
-- `GuidRepresentationMode.V3` (UUID padrão BSON 4 binary subtype 4).
+- Standard GUID representation (BSON binary subtype 4) — driver MongoDB 3.x removeu
+  `GuidRepresentationMode` e usa Standard por default; nenhuma configuração explícita é
+  necessária.
 - `EnumRepresentationConvention(BsonType.String)` — enums serializados como string.
 - `CamelCaseElementNameConvention` — campos em camelCase no BSON, mantendo PascalCase nos POCOs C#.
 - `IgnoreExtraElementsConvention(true)` — campos extras nos documentos não causam falha (evolução de schema sem quebrar leitura).

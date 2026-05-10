@@ -17,6 +17,7 @@ namespace Mecanica.Hermes.Pagamento.Infrastructure.Persistence.Outbox;
 internal sealed partial class MongoOutboxCleanupService(
     IServiceScopeFactory scopeFactory,
     IOptions<OutboxOptions> options,
+    TimeProvider timeProvider,
     ILogger<MongoOutboxCleanupService> logger) : BackgroundService
 {
     private readonly OutboxOptions _options = options.Value;
@@ -47,7 +48,7 @@ internal sealed partial class MongoOutboxCleanupService(
         using var scope = scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<MongoDbContext>();
 
-        var cutoff = DateTime.UtcNow - _options.ProcessedRetention;
+        var cutoff = timeProvider.GetUtcNow().UtcDateTime - _options.ProcessedRetention;
 
         var filter = Builders<OutboxDocument>.Filter.And(
             Builders<OutboxDocument>.Filter.Eq(d => d.Status, OutboxDocument.StatusProcessed),

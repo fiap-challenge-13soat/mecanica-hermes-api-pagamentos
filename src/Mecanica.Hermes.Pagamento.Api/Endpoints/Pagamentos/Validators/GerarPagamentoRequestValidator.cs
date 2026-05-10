@@ -25,8 +25,10 @@ public sealed class GerarPagamentoRequestValidator : AbstractValidator<GerarPaga
         RuleFor(x => x.Valor)
             .GreaterThanOrEqualTo(0.01m).WithMessage("O valor do pagamento deve ser maior ou igual a 0,01.");
 
+        // Avalia DateTime.UtcNow no momento da validação (não na construção do validator,
+        // que é singleton por padrão no FluentValidation).
         RuleFor(x => x.Vencimento)
-            .GreaterThan(DateTime.UtcNow).When(x => x.Vencimento.HasValue)
+            .Must(d => d > DateTime.UtcNow).When(x => x.Vencimento.HasValue)
             .WithMessage("O vencimento deve ser uma data futura.");
     }
 }

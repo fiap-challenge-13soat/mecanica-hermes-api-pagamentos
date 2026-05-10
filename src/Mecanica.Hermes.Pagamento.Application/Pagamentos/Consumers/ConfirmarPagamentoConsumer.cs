@@ -21,16 +21,24 @@ public sealed class ConfirmarPagamentoConsumer(
     IPagamentoMetrics metrics)
     : PagamentoConsumerBase<ExecuteConfirmarPagamento>
 {
+    // Default da base — sobrescrito dinamicamente por mensagem via `MetricKeyFor(via)`.
     protected override string OperacaoMetricKey => PagamentoMetricKeys.Operations.ConfirmarWebhook;
+
+    private static string MetricKeyFor(PagamentoConfirmadoVia via) => via switch
+    {
+        PagamentoConfirmadoVia.Polling => PagamentoMetricKeys.Operations.ConfirmarPolling,
+        _ => PagamentoMetricKeys.Operations.ConfirmarWebhook
+    };
 
     public override async Task Consume(ConsumeContext<ExecuteConfirmarPagamento> context)
     {
         var msg = context.Message;
+        var metricKey = MetricKeyFor(msg.Via);
 
         var pagamento = await repository.GetByIdAsync(msg.PagamentoId);
         if (pagamento is null)
         {
-            metrics.ErroRegistrado(OperacaoMetricKey, PagamentoMetricKeys.ErrorTypes.NotFound);
+            metrics.ErroRegistrado(metricKey, PagamentoMetricKeys.ErrorTypes.NotFound);
             await PublishFailed(context, "Pagamento não encontrado.");
             return;
         }
@@ -47,7 +55,7 @@ public sealed class ConfirmarPagamentoConsumer(
         var confirmar = pagamento.Confirmar(msg.Via);
         if (confirmar.IsFailure)
         {
-            metrics.ErroRegistrado(OperacaoMetricKey, PagamentoMetricKeys.ErrorTypes.InvalidStatus);
+            metrics.ErroRegistrado(metricKey, PagamentoMetricKeys.ErrorTypes.InvalidStatus);
             await PublishFailed(context, confirmar.Errors);
             return;
         }
@@ -60,9 +68,10 @@ public sealed class ConfirmarPagamentoConsumer(
         }
         catch (ConcurrencyConflictException)
         {
-            metrics.ErroRegistrado(OperacaoMetricKey, PagamentoMetricKeys.ErrorTypes.ConcurrencyConflict);
-            await PublishFailed(context, "Conflito de concorrência. A operação será reprocessada.");
-            return;
+            metrics.ErroRegistrado(metricKey, PagamentoMetricKeys.ErrorTypes.ConcurrencyConflict);
+            // Propaga para o MassTransit reprocessar via UseMessageRetry/UseDelayedRedelivery
+            // — o swallow anterior contradizia a mensagem e perdia o retry automático.
+            throw;
         }
 
         await context.Publish(new PagamentoConfirmadoEvent(pagamento.OrdemDeServicoId, pagamento.Id, DateTime.UtcNow));

@@ -16,8 +16,9 @@ public sealed class WebhookSignatureValidator(IOptions<MercadoPagoOptions> optio
     private readonly MercadoPagoOptions _options = options.Value;
 
     /// <summary>
-    ///     Valida a assinatura. Retorna <c>true</c> se for válida ou se o secret não
-    ///     estiver configurado em ambiente de desenvolvimento (controlado pelo caller).
+    ///     Valida a assinatura. Retorna <c>true</c> apenas quando o HMAC bate com o
+    ///     <c>WebhookSecret</c> configurado. Sem secret configurado a validação SEMPRE
+    ///     falha (fail-closed) — não há bypass automático para Development.
     /// </summary>
     public bool Validate(
         string? signatureHeader,
@@ -26,7 +27,7 @@ public sealed class WebhookSignatureValidator(IOptions<MercadoPagoOptions> optio
     {
         if (string.IsNullOrWhiteSpace(_options.WebhookSecret))
             // Sem secret configurado: rejeita para não expor o endpoint a forgery em produção.
-            // Em DEV/Testing, defina WEBHOOK_SECRET=dev-secret no launchSettings local.
+            // Em DEV/Testing, defina MERCADO_PAGO__WEBHOOK_SECRET=dev-secret no launchSettings local.
             return false;
 
         if (string.IsNullOrWhiteSpace(signatureHeader) || string.IsNullOrWhiteSpace(dataId))

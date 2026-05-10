@@ -173,8 +173,9 @@ public sealed class VerificarStatusPagamentoConsumer(
         catch (ConcurrencyConflictException)
         {
             metrics.ErroRegistrado(OperacaoMetricKey, PagamentoMetricKeys.ErrorTypes.ConcurrencyConflict);
-            await PublishFailed(context, "Conflito de concorrência. A operação será reprocessada.");
-            return false;
+            // Propaga para o MassTransit reprocessar via UseMessageRetry/UseDelayedRedelivery
+            // — o swallow anterior contradizia a mensagem e perdia o retry automático.
+            throw;
         }
     }
 

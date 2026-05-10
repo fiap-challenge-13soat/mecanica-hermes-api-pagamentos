@@ -46,8 +46,9 @@ public sealed class ExpirarPagamentoConsumer(
         catch (ConcurrencyConflictException)
         {
             metrics.ErroRegistrado(OperacaoMetricKey, PagamentoMetricKeys.ErrorTypes.ConcurrencyConflict);
-            await PublishFailed(context, "Conflito de concorrência. A operação será reprocessada.");
-            return;
+            // Propaga para o MassTransit reprocessar via UseMessageRetry/UseDelayedRedelivery
+            // — o swallow anterior contradizia a mensagem e perdia o retry automático.
+            throw;
         }
 
         await context.Publish(new PagamentoRecusadoEvent(

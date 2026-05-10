@@ -10,13 +10,22 @@ using Microsoft.Extensions.Logging;
 namespace Mecanica.Hermes.Pagamento.Infrastructure.Persistence.UnitOfWork;
 
 /// <summary>
-///     Unit of Work em MongoDB com Outbox transacional. Coleta os Domain Events emitidos
-///     pelos agregados e enfileira-os no <c>pagamento_outbox</c> dentro do mesmo escopo de
-///     escrita do agregado. O <see cref="Outbox.MongoOutboxProcessor" /> em background
-///     despacha cada documento via <see cref="IDomainEventDispatcher" />.
+///     Unit of Work em MongoDB que materializa os Domain Events coletados dos agregados
+///     na coleção <c>pagamento_outbox</c>. O <see cref="Outbox.MongoOutboxProcessor" /> em
+///     background despacha cada documento via <see cref="IDomainEventDispatcher" />.
+///     <para>
+///         <b>Garantia atual:</b> at-least-once via outbox — repositórios e este UoW
+///         executam suas escritas sem compartilhar <c>IClientSessionHandle</c>, portanto
+///         agregado e outbox NÃO são atômicos hoje. Se a escrita do agregado suceder e
+///         o Insert do outbox falhar, os eventos permanecem no buffer interno
+///         (<c>_pendingEvents</c>) e podem ser re-tentados em um Commit subsequente.
+///         A propagação de sessão (transactional outbox real, com replica set Mongo) é
+///         um próximo passo planejado quando a reconciliação por outbox processor não for
+///         suficiente.
+///     </para>
 /// </summary>
 [ExcludeFromCodeCoverage(Justification =
-    "UoW Mongo com transação + outbox — coberto por testes de integração com Testcontainers.")]
+    "UoW Mongo com outbox — coberto por testes de integração com Testcontainers.")]
 internal sealed partial class MongoUnitOfWork(
     MongoDbContext db,
     TimeProvider timeProvider,
@@ -39,7 +48,6 @@ internal sealed partial class MongoUnitOfWork(
 
         var now = timeProvider.GetUtcNow().UtcDateTime;
         var snapshot = _pendingEvents.ToArray();
-        _pendingEvents.Clear();
 
         var docs = new List<OutboxDocument>(snapshot.Length);
         foreach (var evt in snapshot)
@@ -75,6 +83,11 @@ internal sealed partial class MongoUnitOfWork(
             return 0;
 
         await db.Outbox.InsertManyAsync(docs, cancellationToken: cancellationToken);
+
+        // Limpa o buffer só APÓS confirmação da escrita — se InsertManyAsync falhar
+        // (rede / cluster transitório), os eventos permanecem no buffer e podem ser
+        // re-tentados em um Commit subsequente em vez de serem perdidos silenciosamente.
+        _pendingEvents.Clear();
         return docs.Count;
     }
 

@@ -61,4 +61,5 @@ internal static class VariableNames
     public const string OutboxBatchSize = "OUTBOX__BATCH_SIZE";
     public const string OutboxMaxRetries = "OUTBOX__MAX_RETRIES";
     public const string OutboxProcessedRetentionDays = "OUTBOX__PROCESSED_RETENTION_DAYS";
+    public const string OutboxClaimTtl = "OUTBOX__CLAIM_TTL";
 }

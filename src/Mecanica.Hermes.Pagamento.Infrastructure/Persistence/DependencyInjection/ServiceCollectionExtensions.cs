@@ -78,6 +78,12 @@ internal static class ServiceCollectionExtensions
                     CultureInfo.InvariantCulture,
                     out var days))
                 options.ProcessedRetention = TimeSpan.FromDays(days);
+
+            if (TimeSpan.TryParse(
+                    Environment.GetEnvironmentVariable(VariableNames.OutboxClaimTtl),
+                    CultureInfo.InvariantCulture,
+                    out var claimTtl))
+                options.ClaimTtl = claimTtl;
         });
 
         services.AddSingleton<OutboxHealthMetrics>();

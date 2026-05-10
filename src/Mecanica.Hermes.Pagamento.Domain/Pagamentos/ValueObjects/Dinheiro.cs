@@ -3,8 +3,10 @@ using Mecanica.Hermes.Shared.Core.Results;
 namespace Mecanica.Hermes.Pagamento.Domain.Pagamentos.ValueObjects;
 
 /// <summary>
-///     Valor monetário com moeda fixa em BRL (Real Brasileiro). Limite: 2 casas decimais
-///     (centavos), arredondamento para baixo (truncamento). Valor mínimo: 0,01.
+///     Valor monetário com moeda configurável (default <see cref="MoedaPadrao" /> = BRL).
+///     <see cref="Criar(decimal, string)" /> aceita override de moeda e normaliza para
+///     maiúsculas invariantes. Limite: 2 casas decimais (centavos), arredondamento para
+///     baixo (truncamento). Valor mínimo: 0,01.
 /// </summary>
 public sealed class Dinheiro
 {
