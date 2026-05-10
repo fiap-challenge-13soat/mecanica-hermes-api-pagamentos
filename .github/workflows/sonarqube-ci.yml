@@ -1,0 +1,117 @@
+name: SonarQube
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: read
+  packages: read
+
+concurrency:
+  group: sonar-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  SONAR_SCANNER_VERSION: 11.2.1
+  DOTNET_VERSION: "10.0.x"
+
+jobs:
+  build:
+    name: Build and analyze
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          fetch-depth: 0 # Shallow clones devem ser desabilitados para melhor relevância da análise
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4.8.0
+        with:
+          java-version: 17
+          distribution: zulu
+
+      - name: Setup .NET ${{ env.DOTNET_VERSION }}
+        uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Cache NuGet packages
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('Directory.Packages.props') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - name: Cache SonarQube Cloud packages
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+
+      - name: Cache SonarQube Cloud scanner
+        id: cache-sonar-scanner
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ${{ runner.temp }}/scanner
+          key: ${{ runner.os }}-sonar-scanner-${{ env.SONAR_SCANNER_VERSION }}
+          restore-keys: ${{ runner.os }}-sonar-scanner-
+
+      - name: Install SonarQube Cloud scanner
+        if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          mkdir -p "${{ runner.temp }}/scanner"
+          dotnet tool install dotnet-sonarscanner \
+            --tool-path "${{ runner.temp }}/scanner" \
+            --version ${{ env.SONAR_SCANNER_VERSION }}
+
+      - name: Build, test and analyze
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_USERNAME: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
+          # Em eventos pull_request, github.head_ref/base_ref e o número do PR
+          # alimentam as propriedades sonar.pullrequest.* — sem isso, o run é
+          # registrado como branch analysis e a decoração no PR não acontece.
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_HEAD: ${{ github.head_ref }}
+          PR_BASE: ${{ github.base_ref }}
+        shell: bash
+        run: |
+          export PATH="${{ runner.temp }}/scanner:$PATH"
+
+          BEGIN_ARGS=(
+            /k:"fiap-challenge-13soat_mecanica-hermes-api-pagamentos"
+            /o:"fiap-challenge-13soat"
+            /d:sonar.host.url="https://sonarcloud.io"
+            /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml"
+            /d:sonar.coverage.exclusions="**/Migrations/**,**/Program.cs,**/tests/**"
+            /d:sonar.exclusions="**/Migrations/**,**/bin/**,**/obj/**"
+          )
+
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BEGIN_ARGS+=(
+              /d:sonar.pullrequest.key="${PR_NUMBER}"
+              /d:sonar.pullrequest.branch="${PR_HEAD}"
+              /d:sonar.pullrequest.base="${PR_BASE}"
+            )
+          fi
+
+          dotnet-sonarscanner begin "${BEGIN_ARGS[@]}"
+
+          dotnet build Mecanica.Hermes.Pagamento.sln --configuration Release
+
+          dotnet test Mecanica.Hermes.Pagamento.sln \
+            --configuration Release \
+            --no-build \
+            --settings coverlet.runsettings \
+            --results-directory .temp/coverage \
+            --logger:"console;verbosity=normal"
+
+          dotnet-sonarscanner end

@@ -1,0 +1,64 @@
+using MassTransit;
+using Mecanica.Hermes.Contracts.Integration;
+using Mecanica.Hermes.Pagamento.Application.Common.Messaging;
+using Mecanica.Hermes.Pagamento.Application.Pagamentos.Constants;
+using Mecanica.Hermes.Pagamento.Application.Pagamentos.Messages.Commands;
+using Mecanica.Hermes.Pagamento.Application.Pagamentos.Ports;
+using Mecanica.Hermes.Shared.Application.Messaging;
+using Mecanica.Hermes.Shared.Core.Persistence;
+
+namespace Mecanica.Hermes.Pagamento.Application.Pagamentos.Consumers;
+
+public sealed class ExpirarPagamentoConsumer(
+    IPagamentoRepository repository,
+    IUnitOfWork unitOfWork,
+    IPagamentoMetrics metrics)
+    : PagamentoConsumerBase<ExecuteExpirarPagamento>
+{
+    protected override string OperacaoMetricKey => PagamentoMetricKeys.Operations.Expirar;
+
+    public override async Task Consume(ConsumeContext<ExecuteExpirarPagamento> context)
+    {
+        var msg = context.Message;
+
+        var pagamento = await repository.GetByIdAsync(msg.PagamentoId);
+        if (pagamento is null)
+        {
+            metrics.ErroRegistrado(OperacaoMetricKey, PagamentoMetricKeys.ErrorTypes.NotFound);
+            await PublishFailed(context, "Pagamento não encontrado.");
+            return;
+        }
+
+        var expirar = pagamento.Expirar();
+        if (expirar.IsFailure)
+        {
+            metrics.ErroRegistrado(OperacaoMetricKey, PagamentoMetricKeys.ErrorTypes.InvalidStatus);
+            await PublishFailed(context, expirar.Errors);
+            return;
+        }
+
+        await repository.UpdateAsync(pagamento);
+
+        try
+        {
+            await unitOfWork.CommitAsync(context.CancellationToken);
+        }
+        catch (ConcurrencyConflictException)
+        {
+            metrics.ErroRegistrado(OperacaoMetricKey, PagamentoMetricKeys.ErrorTypes.ConcurrencyConflict);
+            // Propaga para o MassTransit reprocessar via UseMessageRetry/UseDelayedRedelivery
+            // — o swallow anterior contradizia a mensagem e perdia o retry automático.
+            throw;
+        }
+
+        await context.Publish(new PagamentoRecusadoEvent(
+            pagamento.OrdemDeServicoId,
+            pagamento.Id,
+            "Pagamento expirado: limite de verificações atingido sem confirmação.",
+            DateTime.UtcNow));
+
+        metrics.PagamentoExpirado();
+
+        await PublishCompleted(context);
+    }
+}

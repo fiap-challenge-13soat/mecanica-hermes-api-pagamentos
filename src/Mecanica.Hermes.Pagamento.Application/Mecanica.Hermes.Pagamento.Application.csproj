@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <ItemGroup>
+        <PackageReference Include="MassTransit.Abstractions"/>
+        <PackageReference Include="MediatR"/>
+        <PackageReference Include="Mecanica.Hermes.Shared.Core"/>
+        <PackageReference Include="Mecanica.Hermes.Shared.Application"/>
+        <PackageReference Include="Mecanica.Hermes.Contracts"/>
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Mecanica.Hermes.Pagamento.Domain\Mecanica.Hermes.Pagamento.Domain.csproj"/>
+    </ItemGroup>
+    <ItemGroup>
+        <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+            <_Parameter1>Mecanica.Hermes.Pagamento.Application.Tests</_Parameter1>
+        </AssemblyAttribute>
+    </ItemGroup>
+</Project>

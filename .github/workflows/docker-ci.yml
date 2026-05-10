@@ -1,0 +1,110 @@
+name: Build and Publish Docker Image
+
+# Triggers:
+#   1. workflow_run: builds the image only after "Build and Tests CI" passes on main.
+#      Uses the exact commit SHA that passed CI to avoid building a stale HEAD.
+#   2. push tags v*.*.*: version releases are tagged from tested main commits, so
+#      no test gate is required here — the tag itself is the promotion gate.
+#
+# Feature branches are intentionally excluded: they go through build-and-tests-ci
+# only; no Docker image is published until the commit merges to main.
+#
+# The "release: published" trigger was removed: publishing a GitHub Release
+# creates a vX.Y.Z tag, which already fires the "push tags" trigger above.
+# Having both would build and push the same image twice.
+on:
+  workflow_run:
+    workflows: ["Build and Tests CI"]
+    types: [completed]
+    branches: [main]
+  push:
+    tags:
+      - "v*.*.*"
+
+env:
+  IMAGE_NAME: mechermes/mecanica-hermes-api-pagamento
+
+jobs:
+  docker:
+    # Skip when the upstream CI run failed or was cancelled.
+    # Tag pushes always proceed (the commit was already validated on main).
+    # For workflow_run, also require head_repository == this repo to refuse any
+    # commit originating from a fork (defense in depth — upstream CI only runs on
+    # push to main/feature/**, which forks can't perform, but Sonar flags the
+    # pattern anyway).
+    if: >
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
+      (github.event_name == 'workflow_run' &&
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.head_repository.full_name == github.repository)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          # workflow_run: build the exact commit that passed CI, not the current HEAD
+          # (a newer commit may have landed between the CI run and this workflow starting)
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          # Don't leave the GITHUB_TOKEN on disk for subsequent steps — this job
+          # only builds and pushes a Docker image; no git operations are needed.
+          persist-credentials: false
+
+      # docker/metadata-action reads GITHUB_SHA to generate the sha- tag.
+      # For workflow_run events GITHUB_SHA points to the HEAD of the default branch
+      # at the time this workflow runs, which may differ from the tested commit.
+      # Override it so the sha tag is always traceable to the exact tested commit.
+      - name: Alinhar GITHUB_SHA com o commit testado
+        if: github.event_name == 'workflow_run'
+        run: echo "GITHUB_SHA=${{ github.event.workflow_run.head_sha }}" >> $GITHUB_ENV
+
+      - name: Verificar existência do Dockerfile
+        run: test -f Dockerfile
+
+      - name: Set up QEMU (multi-arch)
+        uses: docker/setup-qemu-action@ce360397dd3f832beb865e1373c09c0e9f86d70a # v4.0.0
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Extract Docker metadata (tags, labels)
+        id: meta
+        uses: docker/metadata-action@030e881283bb7a6894de51c315a6bfe6a94e05cf # v6.0.0
+        with:
+          images: ${{ env.IMAGE_NAME }}
+          tags: |
+            # Short SHA for traceability on every published image
+            type=sha,format=short,prefix=sha-
+
+            # SemVer tags when a vX.Y.Z tag is pushed
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+
+            # 'latest' only for commits that arrived via the CI gate on main
+            type=raw,value=latest,enable=${{ github.event_name == 'workflow_run' }}
+
+      - name: Build and push
+        uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7.1.0
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          platforms: linux/amd64,linux/arm64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            GITHUB_USERNAME=${{ github.actor }}
+          secrets: |
+            github_token=${{ secrets.PACKAGES_TOKEN }}

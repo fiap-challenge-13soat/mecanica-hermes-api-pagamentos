@@ -1,0 +1,64 @@
+using MassTransit;
+using Mecanica.Hermes.Contracts.Integration;
+using Mecanica.Hermes.Pagamento.Application.Common.Messaging;
+using Mecanica.Hermes.Pagamento.Application.Pagamentos.Constants;
+using Mecanica.Hermes.Pagamento.Application.Pagamentos.Messages.Commands;
+using Mecanica.Hermes.Pagamento.Application.Pagamentos.Ports;
+using Mecanica.Hermes.Shared.Application.Messaging;
+using Mecanica.Hermes.Shared.Core.Persistence;
+
+namespace Mecanica.Hermes.Pagamento.Application.Pagamentos.Consumers;
+
+public sealed class RecusarPagamentoConsumer(
+    IPagamentoRepository repository,
+    IUnitOfWork unitOfWork,
+    IPagamentoMetrics metrics)
+    : PagamentoConsumerBase<ExecuteRecusarPagamento>
+{
+    protected override string OperacaoMetricKey => PagamentoMetricKeys.Operations.Recusar;
+
+    public override async Task Consume(ConsumeContext<ExecuteRecusarPagamento> context)
+    {
+        var msg = context.Message;
+
+        var pagamento = await repository.GetByIdAsync(msg.PagamentoId);
+        if (pagamento is null)
+        {
+            metrics.ErroRegistrado(OperacaoMetricKey, PagamentoMetricKeys.ErrorTypes.NotFound);
+            await PublishFailed(context, "Pagamento não encontrado.");
+            return;
+        }
+
+        var recusar = pagamento.Recusar(msg.Motivo);
+        if (recusar.IsFailure)
+        {
+            metrics.ErroRegistrado(OperacaoMetricKey, PagamentoMetricKeys.ErrorTypes.InvalidStatus);
+            await PublishFailed(context, recusar.Errors);
+            return;
+        }
+
+        await repository.UpdateAsync(pagamento);
+
+        try
+        {
+            await unitOfWork.CommitAsync(context.CancellationToken);
+        }
+        catch (ConcurrencyConflictException)
+        {
+            metrics.ErroRegistrado(OperacaoMetricKey, PagamentoMetricKeys.ErrorTypes.ConcurrencyConflict);
+            // Propaga para o MassTransit reprocessar via UseMessageRetry/UseDelayedRedelivery
+            // — o swallow anterior contradizia a mensagem e perdia o retry automático.
+            throw;
+        }
+
+        await context.Publish(new PagamentoRecusadoEvent(
+            pagamento.OrdemDeServicoId,
+            pagamento.Id,
+            msg.Motivo,
+            DateTime.UtcNow));
+
+        metrics.PagamentoRecusado();
+
+        await PublishCompleted(context);
+    }
+}

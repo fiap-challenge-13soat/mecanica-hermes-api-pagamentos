@@ -1,0 +1,58 @@
+name: Trigger K8s Deploy
+
+on:
+  workflow_run:
+    workflows: ["Build and Publish Docker Image"]
+    types:
+      - completed
+
+jobs:
+  trigger-hml:
+    # Dispara quando o CI passa na branch main
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger K8s Deploy - HML
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          github-token: ${{ secrets.K8S_REPO_PAT }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: 'fiap-challenge-13soat',
+              repo: 'mecanica-hermes-k8s',
+              workflow_id: 'api-deploy.yml',
+              ref: 'main',
+              inputs: {
+                environment: 'hml',
+                image_tag: 'main'
+              }
+            });
+            console.log('Deploy HML triggered successfully');
+
+  trigger-prd:
+    # Dispara quando o CI passa em uma release tag (ex: v1.2.3)
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      startsWith(github.event.workflow_run.head_branch, 'v')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger K8s Deploy - PRD
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          github-token: ${{ secrets.K8S_REPO_PAT }}
+          script: |
+            const gitTag = context.payload.workflow_run.head_branch;
+            const imageTag = gitTag.replace(/^v/, '');
+            await github.rest.actions.createWorkflowDispatch({
+              owner: 'fiap-challenge-13soat',
+              repo: 'mecanica-hermes-k8s',
+              workflow_id: 'api-deploy.yml',
+              ref: 'main',
+              inputs: {
+                environment: 'prd',
+                image_tag: imageTag
+              }
+            });
+            console.log(`Deploy PRD triggered with image tag: ${imageTag}`);
