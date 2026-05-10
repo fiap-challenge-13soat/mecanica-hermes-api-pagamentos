@@ -118,3 +118,21 @@ Coleção `pagamento_outbox` com schema `{ _id, type, payload, status, retryCoun
 - `UseDelayedRedelivery` — exponencial (15s → 2min, 3 tentativas) para falhas mais persistentes.
 - `UseInMemoryOutbox` — garantia "tudo ou nada" entre publish + commit dentro do consumer.
 - `PagamentoCommandValidationFilter<T>` — descarta mensagens com `PagamentoId == Guid.Empty` sem retry.
+
+## Adicionando um novo consumer
+
+Os consumers são descobertos por **scan automático** do assembly `Mecanica.Hermes.Pagamento.Application`:
+
+```csharp
+// BusRegistrationConfiguratorExtensions.cs
+configurator.AddConsumers(typeof(IApplicationAssemblyMarker).Assembly);
+```
+
+Implicações práticas:
+
+- **Adicionar uma nova classe que implementa `IConsumer<T>` no projeto Application é suficiente para registrá-la.** Não é necessário tocar em DI manualmente.
+- A receive endpoint correspondente é provisionada com naming convention de `kebab-case` (`OrdemDeServicoCanceladaConsumer` → fila `ordem-de-servico-cancelada-consumer`).
+- Pipeline (retry/redelivery/outbox) é aplicado via `UseConsumeFilter`/`UseMessageRetry` no `BusFactoryConfiguratorExtensions`, então um novo consumer herda automaticamente esses comportamentos.
+- Se o novo consumer precisar de dependências (`IPagamentoRepository`, `IUnitOfWork`, etc.), elas são resolvidas via DI normalmente — **registre as dependências em `Persistence/DependencyInjection/ServiceCollectionExtensions`** (não no MassTransit configurator).
+
+**Quando NÃO usar auto-discovery:** se um consumer precisa de configuração de endpoint customizada (ex.: prefetch dedicado, partitioning, dead letter queue específica), prefira registrar explicitamente via `cfg.ReceiveEndpoint("nome-custom", e => e.ConfigureConsumer<MeuConsumer>(context))` no `BusFactoryConfiguratorExtensions`. Os consumers cross-service atuais (`OrdemDeServicoAguardando*Consumer`, `OrdemDeServicoCanceladaConsumer`) não precisam disso.

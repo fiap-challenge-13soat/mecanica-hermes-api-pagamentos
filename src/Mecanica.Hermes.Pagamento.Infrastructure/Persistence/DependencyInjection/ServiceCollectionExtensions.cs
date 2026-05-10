@@ -97,7 +97,17 @@ internal static class ServiceCollectionExtensions
         services.AddHostedService<MongoIndexInitializer>();
     }
 
-    private static void EnsureConventions()
+    /// <summary>
+    ///     Registra a `ConventionPack` global de Bson para esta API: camelCase nas keys,
+    ///     enums como string, e ignora extras. Idempotente (registra uma vez por processo
+    ///     via <see cref="Interlocked.Exchange(ref int, int)" />).
+    /// </summary>
+    /// <remarks>
+    ///     Exposto como <see langword="internal"/> para que o teste de contrato em
+    ///     `Mecanica.Hermes.Pagamento.Infrastructure.Tests.Persistence.MongoCamelCaseConventionTests`
+    ///     consiga ativar as convenções antes de serializar um aggregate.
+    /// </remarks>
+    internal static void EnsureConventions()
     {
         if (Interlocked.Exchange(ref _conventionsRegistered, 1) == 1) return;
 
