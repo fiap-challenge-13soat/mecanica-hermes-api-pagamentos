@@ -1,0 +1,38 @@
+# VCS / IDE
+.git
+.gitignore
+.gitattributes
+.github
+.vscode
+.idea
+
+# Build outputs
+**/bin
+**/obj
+.temp
+TestResults
+coverage
+*.log
+
+# Tests & docs (Dockerfile não copia, tirar do contexto acelera o build)
+tests
+docs
+*.md
+!README.md
+
+# Local config / segredos potenciais
+**/appsettings.Development.json
+**/appsettings.Local.json
+**/appsettings.*.Local.json
+.env
+.env.*
+*.user
+secrets.json
+
+# Outros itens não usados pelo build
+LICENSE
+.editorconfig
+justfile
+coverlet.runsettings
+Dockerfile
+.dockerignore

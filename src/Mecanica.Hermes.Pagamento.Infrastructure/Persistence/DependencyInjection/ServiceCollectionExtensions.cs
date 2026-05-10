@@ -110,5 +110,11 @@ internal static class ServiceCollectionExtensions
             new CamelCaseElementNameConvention()
         };
         ConventionRegistry.Register("mecanica-hermes-pagamento-conventions", pack, _ => true);
+
+        // Saga state PagamentoState.OperationTimeoutTokenId (Guid?) nao tem
+        // [BsonGuidRepresentation]; sem o serializador global, MassTransit MongoDb
+        // saga falha com BsonSerializationException e nenhum pagamento eh criado.
+        MongoDB.Bson.Serialization.BsonSerializer.TryRegisterSerializer(
+            new MongoDB.Bson.Serialization.Serializers.GuidSerializer(GuidRepresentation.Standard));
     }
 }
