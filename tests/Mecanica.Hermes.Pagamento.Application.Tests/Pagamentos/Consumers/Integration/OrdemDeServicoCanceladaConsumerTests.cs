@@ -27,7 +27,8 @@ public class OrdemDeServicoCanceladaConsumerTests
             .AddMassTransitTestHarness(cfg => cfg.AddConsumer<OrdemDeServicoCanceladaConsumer>())
             .AddSingleton(repo.Object)
             .AddSingleton(uow.Object)
-            .AddSingleton<ILogger<OrdemDeServicoCanceladaConsumer>>(NullLogger<OrdemDeServicoCanceladaConsumer>.Instance)
+            .AddSingleton<ILogger<OrdemDeServicoCanceladaConsumer>>(
+                NullLogger<OrdemDeServicoCanceladaConsumer>.Instance)
             .BuildServiceProvider(true);
 
     [Fact]
