@@ -115,8 +115,11 @@ app.UseCorrelationId();
 app.UseGlobalExceptionHandler();
 app.UseCors("default");
 app.UseRateLimiter();
-app.MapOpenApi();
-app.MapScalarApiReference("pagamentos/scalar");
+app.MapOpenApi("/pagamentos/openapi/v1.json");
+app.MapScalarApiReference("pagamentos/scalar", options =>
+{
+    options.WithOpenApiRoutePattern("/pagamentos/openapi/v1.json");
+});
 
 if (app.Environment.IsDevelopment() || app.Environment.EnvironmentName == EnvironmentNames.Testing)
 {
