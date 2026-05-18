@@ -118,7 +118,7 @@ app.UseRateLimiter();
 app.MapOpenApi("/openapi/pagamentos/v1.json");
 app.MapScalarApiReference(options => 
 {
-    options.WithOpenApiRoute("/openapi/pagamentos/v1.json"); 
+    options.WithEndpoint("/openapi/pagamentos/v1.json"); 
 });
 
 if (app.Environment.IsDevelopment() || app.Environment.EnvironmentName == EnvironmentNames.Testing)
