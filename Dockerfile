@@ -42,6 +42,10 @@ RUN dotnet publish src/Mecanica.Hermes.Pagamento.Api/Mecanica.Hermes.Pagamento.A
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
 
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libgssapi-krb5-2 \
+    && rm -rf /var/lib/apt/lists/*
+
 # Usuário não-root — a imagem aspnet:10.0 já traz o usuário `app` (UID 1654)
 # pré-criado, atendendo least-privilege e políticas Kubernetes runAsNonRoot:true.
 # --chmod=0555 (r-x): artefatos publicados só precisam de leitura/execução em
