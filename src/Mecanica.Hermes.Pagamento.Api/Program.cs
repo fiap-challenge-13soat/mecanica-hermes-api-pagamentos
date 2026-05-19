@@ -22,6 +22,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.OpenApi;
 using Scalar.AspNetCore;
 using IPNetwork = System.Net.IPNetwork;
 
@@ -37,7 +38,16 @@ builder.Services.AddSingleton<IValidator<GerarPagamentoRequest>, GerarPagamentoR
 builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options =>
+{
+    var publicUrl = Environment.GetEnvironmentVariable("PUBLIC_URL");
+    if (!string.IsNullOrEmpty(publicUrl))
+        options.AddDocumentTransformer((document, context, ct) =>
+        {
+            document.Servers = [new() { Url = publicUrl.TrimEnd('/') }];
+            return Task.CompletedTask;
+        });
+});
 
 builder.Services.AddCors(options =>
 {
