@@ -7,6 +7,7 @@
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer"/>
         <PackageReference Include="MassTransit"/>
         <PackageReference Include="MassTransit.RabbitMQ"/>
+        <PackageReference Include="MassTransit.Quartz"/>
         <PackageReference Include="MassTransit.AmazonSQS"/>
         <PackageReference Include="MongoDB.Driver"/>
         <PackageReference Include="AspNetCore.HealthChecks.MongoDb"/>
