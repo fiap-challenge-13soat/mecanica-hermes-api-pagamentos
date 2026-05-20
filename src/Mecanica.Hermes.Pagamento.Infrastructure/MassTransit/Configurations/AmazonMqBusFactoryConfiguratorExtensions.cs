@@ -29,10 +29,7 @@ internal static class AmazonMqBusFactoryConfiguratorExtensions
         configurator.Host(new Uri(options.MassTransitConnectionString), h =>
         {
             h.Heartbeat(AmazonMqHeartbeat);
-            h.UseSsl(s =>
-            {
-                s.Protocol = SslProtocols.Tls12;
-            });
+            h.UseSsl(s => s.Protocol = SslProtocols.Tls12);
         });
 
         configurator.ConfigureEndpoints(registration);
