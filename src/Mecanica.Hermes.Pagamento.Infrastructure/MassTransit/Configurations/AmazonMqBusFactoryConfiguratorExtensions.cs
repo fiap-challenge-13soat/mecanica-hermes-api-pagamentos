@@ -6,7 +6,8 @@ using Microsoft.Extensions.Options;
 
 namespace Mecanica.Hermes.Pagamento.Infrastructure.MassTransit.Configurations;
 
-[ExcludeFromCodeCoverage(Justification = "Configuração de broker Amazon MQ (engine RabbitMQ) — exercitada em ambiente real.")]
+[ExcludeFromCodeCoverage(Justification =
+    "Configuração de broker Amazon MQ (engine RabbitMQ) — exercitada em ambiente real.")]
 internal static class AmazonMqBusFactoryConfiguratorExtensions
 {
     // Amazon MQ for RabbitMQ recomenda heartbeat de 60s; valores menores derrubam a conexão
