@@ -54,15 +54,21 @@ public static partial class MercadoPagoWebhookRoute
             return Results.Unauthorized();
         }
 
-        if (!Guid.TryParse(dataId, out var pagamentoId))
+        if (!long.TryParse(dataId, out var mercadoPagoPaymentId))
         {
             // No mundo real o id do payment do MP precisa ser convertido em PagamentoId via
             // external_reference (chamada extra ao MP). Para simplificar nesse scaffold, aceitamos
             // que `data.id` é o próprio PagamentoId — o cliente envia preference com
             // external_reference = PagamentoId, e o webhook deve carregar esse identificador.
-            LogDataIdNaoGuid(logger, dataId);
+            LogDataIdNaoLong(logger, dataId);
             return Results.BadRequest();
         }
+
+        // Scaffold: deriva um Guid determinístico do MP payment ID para correlação da SAGA.
+        // Em produção, o PagamentoId real deve ser obtido via external_reference na API do MP.
+        var bytes = new byte[16];
+        BitConverter.GetBytes(mercadoPagoPaymentId).CopyTo(bytes, 0);
+        var pagamentoId = new Guid(bytes);
 
         var status = payload?.Action ?? "pending";
 
@@ -88,6 +94,6 @@ public static partial class MercadoPagoWebhookRoute
     [LoggerMessage(Level = LogLevel.Warning, Message = "Webhook do Mercado Pago recebido com assinatura inválida.")]
     private static partial void LogAssinaturaInvalida(ILogger logger);
 
-    [LoggerMessage(Level = LogLevel.Warning, Message = "Webhook do Mercado Pago recebeu data.id não-Guid: {DataId}")]
-    private static partial void LogDataIdNaoGuid(ILogger logger, string dataId);
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Webhook do Mercado Pago recebeu data.id não-long: {DataId}")]
+    private static partial void LogDataIdNaoLong(ILogger logger, string dataId);
 }
