@@ -61,7 +61,7 @@ public static partial class MercadoPagoWebhookRoute
             // que `data.id` é o próprio PagamentoId — o cliente envia preference com
             // external_reference = PagamentoId, e o webhook deve carregar esse identificador.
             LogDataIdNaoGuid(logger, dataId);
-            return Results.BadRequest();
+            return Results.Ok(); // MP não reenvia webhook se retornar 200, então não é necessário rejeitar com 400
         }
 
         var status = payload?.Action ?? "pending";
