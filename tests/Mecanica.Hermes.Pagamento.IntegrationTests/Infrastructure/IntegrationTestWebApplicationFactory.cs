@@ -71,6 +71,8 @@ public sealed class IntegrationTestWebApplicationFactory : WebApplicationFactory
         Environment.SetEnvironmentVariable(VariableNames.MercadoPagoAccessToken, MercadoPagoAccessToken);
         // Polling do Outbox encurta em testes para que MongoOutboxProcessor despache rápido.
         Environment.SetEnvironmentVariable(VariableNames.OutboxPollInterval, "00:00:00.200");
+        // Default mudou para AmazonMq em prod; testes precisam de in-memory transport.
+        Environment.SetEnvironmentVariable(VariableNames.MassTransitTransportService, "None");
 
         // Triggers DI build + hosted services (incluindo MongoIndexInitializer).
         _ = CreateClient();

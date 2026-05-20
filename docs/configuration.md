@@ -21,8 +21,8 @@ Todas as variáveis usam **double-underscore** (`__`) para mapeamento ASP.NET Co
 
 | Variável | Default | Descrição |
 | --- | --- | --- |
-| `MASSTRANSIT__TRANSPORT_SERVICE` | (vazio → in-memory) | `Amazon SQS` (recomendado em prod). |
-| `MASSTRANSIT__CONNECTION_STRING` | — | URL do RabbitMQ (`amqp://...`). |
+| `MASSTRANSIT__TRANSPORT_SERVICE` | `AmazonMq` (quando ausente) | `AmazonMq` (default, broker gerenciado AWS), `RabbitMq` (auto-hospedado), `None` (in-memory para testes), `AmazonSqs`. |
+| `MASSTRANSIT__CONNECTION_STRING` | — | AmazonMq: `amqps://user:pass@broker-id.mq.<region>.amazonaws.com:5671`. RabbitMq: `amqp://guest:guest@localhost:5672/`. |
 | `MASSTRANSIT__PREFETCH_COUNT` | `24` | Prefetch por endpoint. |
 | `MASSTRANSIT__QUEUE_NAME_PREFIX` | `mecanica-hermes-pagamento` | Prefixo dos endpoints. |
 
