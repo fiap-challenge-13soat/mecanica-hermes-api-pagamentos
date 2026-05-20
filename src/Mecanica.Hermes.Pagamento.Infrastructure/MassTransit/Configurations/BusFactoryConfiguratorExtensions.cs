@@ -8,7 +8,8 @@ using Microsoft.Extensions.Options;
 
 namespace Mecanica.Hermes.Pagamento.Infrastructure.MassTransit.Configurations;
 
-[ExcludeFromCodeCoverage(Justification = "Configuração de retry/redelivery — exercitada pelo broker em produção.")]
+[ExcludeFromCodeCoverage(
+    Justification = "Configuração de retry/redelivery — exercitada pelo broker em produção.")]
 internal static class BusFactoryConfiguratorExtensions
 {
     private const int ImmediateRetryCount = 3;

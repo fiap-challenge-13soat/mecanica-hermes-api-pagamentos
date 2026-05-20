@@ -61,7 +61,7 @@ public sealed partial class OrdemDeServicoCanceladaConsumer(
 
     [LoggerMessage(
         Level = LogLevel.Information,
-        Message = "OS cancelada {OrdemDeServicoId} mas pagamento já está em estado terminal {Status} — nada a fazer.")]
+        Message = "OS cancelada {OrdemDeServicoId} mas pagamento em estado terminal {Status} - nada a fazer.")]
     private static partial void LogJaTerminal(ILogger logger, Guid ordemDeServicoId, PagamentoStatus status);
 
     [LoggerMessage(
