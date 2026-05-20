@@ -30,6 +30,7 @@
     <PackageVersion Include="MassTransit" Version="8.5.9" />
     <PackageVersion Include="MassTransit.Abstractions" Version="8.5.9" />
     <PackageVersion Include="MassTransit.RabbitMQ" Version="8.5.9" />
+    <PackageVersion Include="MassTransit.Quartz" Version="8.5.9" />
     <PackageVersion Include="MassTransit.AmazonSQS" Version="8.5.9" />
     <PackageVersion Include="MassTransit.MongoDb" Version="8.5.9" />
     <PackageVersion Include="MassTransit.TestFramework" Version="8.5.9" />
