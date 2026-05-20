@@ -27,7 +27,7 @@ internal static class BusRegistrationConfiguratorExtensions
 
         configurator.AddConsumers(typeof(IApplicationAssemblyMarker).Assembly);
 
-        configurator.AddDelayedMessageScheduler();
+        configurator.AddQuartzConsumers();
         return configurator;
     }
 }

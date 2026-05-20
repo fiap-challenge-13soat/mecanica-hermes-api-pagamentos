@@ -13,7 +13,7 @@ internal static class RabbitMqBusFactoryConfiguratorExtensions
     {
         var options = registration.GetRequiredService<IOptions<MassTransitOptions>>().Value;
 
-        configurator.UseDelayedMessageScheduler();
+        configurator.UseInMemoryScheduler();
         configurator.Host(options.MassTransitConnectionString);
         configurator.ConfigureEndpoints(registration);
 
