@@ -43,7 +43,8 @@ internal sealed partial class MassTransitMessagePublisher(
         {
             LogPublishFailure(logger, ex, message.GetType().Name);
             throw new BrokerUnavailableException(
-                $"Não foi possível enfileirar a mensagem {message.GetType().Name}. Tente novamente em instantes.", ex);
+                $"Não foi possível enfileirar a mensagem {message.GetType().Name}. Tente novamente em instantes.",
+                ex);
         }
     }
 

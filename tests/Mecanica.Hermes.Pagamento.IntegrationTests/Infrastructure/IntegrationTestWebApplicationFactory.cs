@@ -40,7 +40,9 @@ public sealed class IntegrationTestWebApplicationFactory : WebApplicationFactory
         .WithReplicaSet()
         .Build();
 
-    /// <summary>Fake do <see cref="IClienteApiClient" /> — pré-configurado para devolver um cliente válido.</summary>
+    /// <summary>
+    ///     Fake do <see cref="IClienteApiClient" /> — pré-configurado para devolver um cliente válido.
+    /// </summary>
     public FakeClienteApiClient ClienteApi { get; } = new();
 
     public string MongoConnectionString

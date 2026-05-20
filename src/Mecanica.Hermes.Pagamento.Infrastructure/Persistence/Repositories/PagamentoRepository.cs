@@ -10,7 +10,8 @@ using MongoDB.Driver;
 
 namespace Mecanica.Hermes.Pagamento.Infrastructure.Persistence.Repositories;
 
-[ExcludeFromCodeCoverage(Justification = "Repositório Mongo — coberto por testes de integração com Testcontainers.")]
+[ExcludeFromCodeCoverage(
+    Justification = "Repositório Mongo — coberto por testes de integração com Testcontainers.")]
 internal sealed class PagamentoRepository(MongoDbContext db, IMongoUnitOfWork uow) : IPagamentoRepository
 {
     public async Task<Domain.Pagamentos.Pagamento?> GetByIdAsync(Guid id)
