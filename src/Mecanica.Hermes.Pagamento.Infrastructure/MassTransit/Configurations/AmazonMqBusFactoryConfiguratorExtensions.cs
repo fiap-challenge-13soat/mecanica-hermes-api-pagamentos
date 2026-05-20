@@ -23,7 +23,11 @@ internal static class AmazonMqBusFactoryConfiguratorExtensions
                 "MASSTRANSIT__CONNECTION_STRING é obrigatória quando MASSTRANSIT__TRANSPORT_SERVICE=AmazonMq. " +
                 "Use o endpoint AMQPS do Amazon MQ (esquema amqps com porta 5671).");
 
-        configurator.UseDelayedMessageScheduler();
+        // Amazon MQ for RabbitMQ NÃO suporta o plugin `rabbitmq_delayed_message_exchange`,
+        // logo `UseDelayedMessageScheduler` falha. Usamos scheduler in-memory (não-durável):
+        // timeouts perdidos em restart, mas o polling do SAGA recompõe o estado via Mercado
+        // Pago. TODO: trocar para Quartz com JobStore persistente para durabilidade.
+        configurator.UseInMemoryScheduler();
 
         // SSL é ativado automaticamente pelo MassTransit quando o esquema é `amqps://`.
         // A escolha de protocolo (TLS 1.2/1.3) fica delegada ao .NET runtime / OS.
